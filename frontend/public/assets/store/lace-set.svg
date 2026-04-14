@@ -1,0 +1,9 @@
+<svg width="640" height="760" viewBox="0 0 640 760" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="640" height="760" rx="56" fill="#FFF2F7"/>
+  <ellipse cx="320" cy="612" rx="170" ry="34" fill="#F2D5E3"/>
+  <path d="M212 230C212 184.16 249.16 147 295 147H345C390.84 147 428 184.16 428 230V388C428 484.097 350.097 562 254 562H212V230Z" fill="#D63384"/>
+  <path d="M428 230C428 184.16 390.84 147 345 147H295C249.16 147 212 184.16 212 230V388C212 484.097 289.903 562 386 562H428V230Z" fill="#E83E8C"/>
+  <path d="M258 228L320 304L382 228" stroke="#FFF7FB" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M266 470H374" stroke="#FFF7FB" stroke-width="18" stroke-linecap="round"/>
+  <text x="320" y="660" fill="#9A315F" font-family="Poppins, sans-serif" font-size="42" font-weight="700" text-anchor="middle">Lenceria lace</text>
+</svg>

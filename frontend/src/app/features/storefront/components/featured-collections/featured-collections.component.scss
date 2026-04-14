@@ -1,0 +1,116 @@
+.collections {
+  display: grid;
+  gap: 1rem;
+  padding: 1.55rem 1rem 0;
+
+  &__header {
+    h2 {
+      margin: 0;
+      color: var(--color-ink);
+      font-family: var(--font-display);
+      font-size: 2rem;
+      line-height: 0.96;
+      letter-spacing: -0.07em;
+    }
+  }
+
+  &__scroller {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(8.6rem, 1fr);
+    gap: 1rem;
+    padding-bottom: 0.2rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
+  &__card {
+    display: grid;
+    gap: 0.75rem;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    text-align: center;
+  }
+
+  &__visual {
+    position: relative;
+    overflow: hidden;
+    min-height: 8.3rem;
+    padding: 0.9rem;
+    border-radius: 0.25rem;
+    box-shadow: 0 18px 24px rgba(168, 125, 144, 0.08);
+
+    img,
+    .collections__placeholder {
+      position: relative;
+      z-index: 1;
+      display: block;
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      object-fit: cover;
+      border-radius: 1rem;
+    }
+  }
+
+  &__pedestal {
+    position: absolute;
+    left: 50%;
+    bottom: 0.9rem;
+    width: 5.6rem;
+    height: 1.1rem;
+    transform: translateX(-50%);
+    border-radius: 999px;
+    background: linear-gradient(180deg, #ffffff 0%, #ededed 100%);
+    box-shadow: 0 12px 14px rgba(129, 129, 129, 0.12);
+  }
+
+  &__placeholder {
+    display: grid;
+    place-items: center;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.84), rgba(255, 255, 255, 0.28));
+
+    span {
+      color: var(--color-primary-strong);
+      font-family: var(--font-display);
+      font-size: 2.3rem;
+      font-weight: 800;
+    }
+  }
+
+  &__label {
+    color: var(--color-ink);
+    font-size: 0.92rem;
+    font-weight: 700;
+  }
+
+  &__card--rose .collections__visual {
+    background: linear-gradient(180deg, #ffdfe9 0%, #ffe8ef 100%);
+  }
+
+  &__card--mint .collections__visual {
+    background: linear-gradient(180deg, #d6fbf1 0%, #e4fff8 100%);
+  }
+
+  &__card--lavender .collections__visual {
+    background: linear-gradient(180deg, #eadfff 0%, #f1e8ff 100%);
+  }
+
+  &__card--pearl .collections__visual {
+    background: linear-gradient(180deg, #fff5f8 0%, #fffdfd 100%);
+  }
+}
+
+@media (min-width: 768px) {
+  .collections {
+    padding-inline: 1.35rem;
+
+    &__scroller {
+      grid-auto-columns: minmax(12rem, 1fr);
+    }
+  }
+}

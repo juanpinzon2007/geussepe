@@ -1,0 +1,28 @@
+<header class="store-header">
+  <button class="store-header__icon-button" type="button" aria-label="Abrir menu" (click)="menuClick.emit()">
+    <span class="material-symbols-outlined">menu</span>
+  </button>
+
+  <div class="store-header__brand" aria-label="Marca">
+    <span class="store-header__brand-mark" aria-hidden="true"></span>
+    <div class="store-header__brand-copy">
+      <strong>{{ brandName }}</strong>
+      <span>Boutique mobile-first</span>
+    </div>
+  </div>
+
+  <div class="store-header__actions">
+    <button class="store-header__icon-button" type="button" aria-label="Buscar" (click)="searchClick.emit()">
+      <span class="material-symbols-outlined">search</span>
+    </button>
+
+    <button class="store-header__icon-button" type="button" aria-label="Mi cuenta" (click)="userClick.emit()">
+      <span class="material-symbols-outlined">{{ isAuthenticated ? 'person' : 'account_circle' }}</span>
+    </button>
+
+    <button class="store-header__icon-button store-header__icon-button--cart" type="button" aria-label="Carrito" (click)="cartClick.emit()">
+      <span class="material-symbols-outlined">shopping_cart</span>
+      <span class="store-header__badge">{{ cartCount }}</span>
+    </button>
+  </div>
+</header>

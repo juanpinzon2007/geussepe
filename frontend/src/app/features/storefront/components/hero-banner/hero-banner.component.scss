@@ -1,0 +1,212 @@
+.hero {
+  position: relative;
+  overflow: hidden;
+  border-radius: 0 0 2rem 2rem;
+  background:
+    radial-gradient(circle at 14% 18%, rgba(255, 255, 255, 0.42), transparent 20%),
+    radial-gradient(circle at 86% 18%, rgba(201, 182, 228, 0.45), transparent 22%),
+    linear-gradient(180deg, #f9e8f1 0%, #f6ddea 42%, #f4d8e6 100%);
+  padding: 1.2rem 1rem 1.35rem;
+  box-shadow: 0 22px 40px rgba(214, 51, 132, 0.12);
+
+  &__copy {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    gap: 0.35rem;
+  }
+
+  &__eyebrow {
+    display: inline-flex;
+    width: fit-content;
+    padding: 0.38rem 0.75rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.72);
+    color: var(--color-ink);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  &__subtitle {
+    max-width: 17rem;
+    margin: 0;
+    color: rgba(51, 51, 51, 0.78);
+    font-size: 0.82rem;
+    line-height: 1.45;
+  }
+
+  &__stage {
+    position: relative;
+    min-height: 13.8rem;
+    margin-top: 0.5rem;
+  }
+
+  &__pedestal {
+    position: absolute;
+    bottom: 0.65rem;
+    border-radius: 999px 999px 1.4rem 1.4rem;
+    background: linear-gradient(180deg, #ffffff 0%, #f2f2f2 100%);
+    box-shadow:
+      inset 0 -0.45rem 0 rgba(0, 0, 0, 0.04),
+      0 16px 22px rgba(146, 115, 130, 0.12);
+  }
+
+  &__pedestal--left {
+    left: 0.35rem;
+    width: 6rem;
+    height: 4rem;
+  }
+
+  &__pedestal--center {
+    left: 50%;
+    width: 7.6rem;
+    height: 5.7rem;
+    transform: translateX(-50%);
+  }
+
+  &__pedestal--right {
+    right: 0.55rem;
+    width: 6.7rem;
+    height: 4.8rem;
+  }
+
+  &__product-card {
+    position: absolute;
+    width: 4.6rem;
+    padding: 0.35rem;
+    border-radius: 1.1rem;
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow:
+      0 16px 26px rgba(140, 97, 115, 0.16),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.72);
+
+    &:nth-of-type(1) {
+      left: 0.3rem;
+      bottom: 1.85rem;
+      transform: rotate(-3deg);
+    }
+
+    &:nth-of-type(2) {
+      left: 26%;
+      bottom: 3.3rem;
+      transform: rotate(-1deg);
+      z-index: 1;
+    }
+
+    &:nth-of-type(3) {
+      right: 24%;
+      bottom: 4rem;
+      transform: rotate(2deg);
+      z-index: 1;
+    }
+
+    &:nth-of-type(4) {
+      right: 0.8rem;
+      bottom: 2.1rem;
+      transform: rotate(4deg);
+    }
+  }
+
+  &__product-image,
+  &__product-placeholder {
+    display: block;
+    width: 100%;
+    aspect-ratio: 1 / 1.18;
+    border-radius: 0.9rem;
+  }
+
+  &__product-image {
+    object-fit: cover;
+    background: linear-gradient(180deg, #f6edf4 0%, #e6dff7 100%);
+  }
+
+  &__product-placeholder {
+    display: grid;
+    place-items: center;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(239, 223, 246, 0.96)),
+      linear-gradient(180deg, #f9f4f8 0%, #eadcf6 100%);
+    color: var(--color-primary-strong);
+    font-family: var(--font-display);
+    font-size: 1.35rem;
+    font-weight: 800;
+  }
+
+  &__product-meta {
+    display: grid;
+    gap: 0.1rem;
+    padding-top: 0.35rem;
+
+    strong {
+      font-size: 0.58rem;
+      line-height: 1.15;
+      color: var(--color-ink);
+    }
+
+    span {
+      font-size: 0.5rem;
+      color: var(--color-ink-soft);
+      line-height: 1.1;
+    }
+  }
+
+  &__cta {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 10.8rem;
+    margin: 0.5rem auto 0;
+    padding: 0.92rem 1.35rem;
+    border: 0;
+    border-radius: 1rem;
+    background: linear-gradient(180deg, var(--color-primary) 0%, var(--color-primary-strong) 100%);
+    color: #ffffff;
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: -0.04em;
+    box-shadow: 0 14px 22px rgba(214, 51, 132, 0.28);
+  }
+
+  &__ambient {
+    position: absolute;
+    border-radius: 999px;
+    filter: blur(8px);
+    opacity: 0.75;
+  }
+
+  &__ambient--left {
+    width: 10rem;
+    height: 10rem;
+    left: -5rem;
+    top: 1rem;
+    background: rgba(255, 255, 255, 0.36);
+  }
+
+  &__ambient--right {
+    width: 8rem;
+    height: 8rem;
+    right: -2rem;
+    top: 0.7rem;
+    background: rgba(201, 182, 228, 0.45);
+  }
+}
+
+@media (min-width: 768px) {
+  .hero {
+    border-radius: 2rem;
+    padding: 1.4rem 1.35rem 1.55rem;
+
+    &__stage {
+      min-height: 16rem;
+    }
+
+    &__product-card {
+      width: 5.2rem;
+    }
+  }
+}

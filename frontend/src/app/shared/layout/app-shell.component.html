@@ -1,0 +1,77 @@
+<mat-sidenav-container class="shell">
+  <mat-sidenav
+    class="shell__sidebar"
+    [mode]="isHandset() ? 'over' : 'side'"
+    [opened]="isHandset() ? mobileOpen() : true"
+    (closedStart)="mobileOpen.set(false)"
+  >
+    <section class="brand">
+      <span class="badge">El Desquite 😈</span>
+      <h2>Operacion sensual</h2>
+      <p class="muted">
+        Catalogo, ventas, pedidos, cumplimiento y analitica con el mismo lenguaje visual
+        del storefront.
+      </p>
+    </section>
+
+    <nav class="nav-list">
+      @for (item of navigation(); track item.route) {
+        <a
+          class="nav-item"
+          [routerLink]="item.route"
+          routerLinkActive="nav-item--active"
+          (click)="closeMenu()"
+        >
+          <mat-icon fontSet="material-symbols-outlined">{{ item.icon }}</mat-icon>
+          <span>{{ item.label }}</span>
+        </a>
+      }
+    </nav>
+  </mat-sidenav>
+
+  <mat-sidenav-content>
+    <mat-toolbar class="shell__topbar">
+      <button
+        mat-icon-button
+        type="button"
+        class="shell__menu-trigger"
+        (click)="toggleMenu()"
+        aria-label="Abrir navegacion"
+      >
+        <mat-icon fontSet="material-symbols-outlined">menu</mat-icon>
+      </button>
+
+      <div class="shell__breadcrumbs">
+        @for (crumb of breadcrumbService.breadcrumbs(); track crumb.url; let last = $last) {
+          <a [routerLink]="crumb.url" [class.current]="last">{{ crumb.label }}</a>
+        }
+      </div>
+
+      <span class="shell__spacer"></span>
+
+      <button mat-button [matMenuTriggerFor]="profileMenu" type="button" class="shell__profile">
+        <mat-icon fontSet="material-symbols-outlined">account_circle</mat-icon>
+        {{ user()?.nombre_usuario ?? 'Sesion' }}
+      </button>
+
+      <mat-menu #profileMenu="matMenu">
+        <button mat-menu-item [routerLink]="['/app/profile']">
+          <mat-icon fontSet="material-symbols-outlined">manage_accounts</mat-icon>
+          Mi perfil
+        </button>
+        <button mat-menu-item (click)="logout()">
+          <mat-icon fontSet="material-symbols-outlined">logout</mat-icon>
+          Cerrar sesion
+        </button>
+      </mat-menu>
+    </mat-toolbar>
+
+    @if (activity.isLoading()) {
+      <mat-progress-bar mode="indeterminate" />
+    }
+
+    <main class="shell__content">
+      <router-outlet />
+    </main>
+  </mat-sidenav-content>
+</mat-sidenav-container>

@@ -1,0 +1,235 @@
+<section class="home">
+  <div class="home__canvas">
+    <app-header
+      [brandName]="home()?.brand?.name ?? 'El Desquite 😈'"
+      [cartCount]="cartCount()"
+      [isAuthenticated]="isAuthenticated()"
+      (menuClick)="toggleMenu()"
+      (searchClick)="openSearch()"
+      (userClick)="goToAccount()"
+      (cartClick)="openCart()"
+    />
+
+    <main class="home__content">
+      @if (loading()) {
+        <section class="home__state">
+          <div class="home__skeleton home__skeleton--hero"></div>
+          <div class="home__skeleton home__skeleton--heading"></div>
+          <div class="home__skeleton home__skeleton--cards"></div>
+        </section>
+      } @else if (home()) {
+        <app-hero-banner [hero]="home()!.hero" (buyNow)="addHeroBundle()" />
+
+        <app-featured-collections
+          [collections]="home()!.collections"
+          (collectionSelected)="selectCollection($event)"
+        />
+
+        <section class="promo-spot" aria-labelledby="promo-spot-title">
+          <div class="promo-spot__copy">
+            <span class="home__eyebrow">Comunidad webcam</span>
+            <h2 id="promo-spot-title">{{ home()!.promo.label }}</h2>
+            <p>{{ home()!.promo.description }}</p>
+          </div>
+
+          <a
+            class="promo-spot__cta"
+            [href]="home()!.promo.url"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Ir a Stripchat
+          </a>
+        </section>
+
+        <section class="home__shop" id="shop-grid" aria-labelledby="shop-grid-title">
+          <div class="home__shop-header">
+            <div>
+              <span class="home__eyebrow">Vitrina premium</span>
+              <h2 id="shop-grid-title">Seleccion curada</h2>
+            </div>
+
+            @if (selectedCollectionId()) {
+              <button class="home__filter-reset" type="button" (click)="clearCollectionFilter()">
+                Ver todo
+              </button>
+            }
+          </div>
+
+          <div class="home__product-grid">
+            @for (product of filteredProducts(); track trackByProduct($index, product)) {
+              <article class="product-card">
+                <div class="product-card__media">
+                  @if (product.image_url) {
+                    <img [src]="product.image_url" [alt]="product.title" />
+                  } @else {
+                    <div class="product-card__placeholder" aria-hidden="true">
+                      <span>{{ product.title.slice(0, 1) }}</span>
+                    </div>
+                  }
+                </div>
+
+                <div class="product-card__content">
+                  <span class="product-card__category">{{ product.category_name }}</span>
+                  <h3>{{ product.title }}</h3>
+                  <p>{{ product.description }}</p>
+                </div>
+
+                <div class="product-card__footer">
+                  <strong>{{ product.price | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong>
+                  <button type="button" (click)="addProduct(product)">Agregar</button>
+                </div>
+              </article>
+            } @empty {
+              <article class="home__empty">
+                No hay productos para el filtro actual.
+              </article>
+            }
+          </div>
+        </section>
+      } @else {
+        <section class="home__state">
+          <p>{{ errorMessage() }}</p>
+          <button class="home__retry" type="button" (click)="loadHome()">Reintentar</button>
+        </section>
+      }
+    </main>
+  </div>
+
+  @if (menuOpen()) {
+    <div class="overlay" (click)="closePanels()"></div>
+    <aside class="panel panel--menu" aria-label="Menu de navegacion">
+      <button class="panel__close" type="button" (click)="closePanels()">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+
+      <a routerLink="/home" class="panel__link" (click)="closePanels()">Inicio</a>
+      <button class="panel__link panel__link--button" type="button" (click)="goToDashboard()">
+        {{ isAuthenticated() ? 'Panel admin' : 'Ingresar' }}
+      </button>
+      <button class="panel__link panel__link--button" type="button" (click)="openCart()">
+        Carrito
+      </button>
+    </aside>
+  }
+
+  @if (searchOpen()) {
+    <div class="overlay" (click)="closePanels()"></div>
+    <aside class="panel panel--search" aria-label="Busqueda de productos">
+      <div class="panel__search-field">
+        <span class="material-symbols-outlined">search</span>
+        <input
+          type="search"
+          placeholder="Busca por nombre o coleccion"
+          [value]="searchTerm()"
+          (input)="updateSearch($any($event.target).value)"
+        />
+      </div>
+
+      <div class="panel__search-results">
+        @for (product of filteredProducts(); track trackByProduct($index, product)) {
+          <button class="panel__result" type="button" (click)="addProduct(product)">
+            <span>{{ product.title }}</span>
+            <strong>{{ product.price | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong>
+          </button>
+        } @empty {
+          <p class="panel__empty">No hay coincidencias para esa busqueda.</p>
+        }
+      </div>
+    </aside>
+  }
+
+  @if (cartOpen()) {
+    <div class="overlay" (click)="closeCart()"></div>
+    <aside class="panel panel--cart" aria-label="Carrito y checkout">
+      <div class="panel__cart-header">
+        <div>
+          <span class="home__eyebrow">Checkout</span>
+          <h2>Tu carrito</h2>
+        </div>
+
+        <button class="panel__close" type="button" (click)="closeCart()">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      @if (orderCode()) {
+        <article class="panel__success">
+          <strong>Pedido creado</strong>
+          <span>Codigo: {{ orderCode() }}</span>
+        </article>
+      }
+
+      <div class="panel__cart-items">
+        @for (item of items(); track item.product.id) {
+          <article class="cart-line">
+            <div class="cart-line__copy">
+              <strong>{{ item.product.title }}</strong>
+              <span>{{ item.product.price | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</span>
+            </div>
+
+            <div class="cart-line__actions">
+              <button type="button" (click)="changeQuantity(item.product.id, item.quantity - 1)">-</button>
+              <span>{{ item.quantity }}</span>
+              <button type="button" (click)="changeQuantity(item.product.id, item.quantity + 1)">+</button>
+              <button type="button" class="cart-line__remove" (click)="removeItem(item.product.id)">
+                <span class="material-symbols-outlined">delete</span>
+              </button>
+            </div>
+          </article>
+        } @empty {
+          <p class="panel__empty">Tu carrito esta vacio. Agrega productos desde la vitrina.</p>
+        }
+      </div>
+
+      <form class="checkout-form" [formGroup]="checkoutForm" (ngSubmit)="submitOrder()">
+        <label>
+          <span>Nombre</span>
+          <input type="text" formControlName="nombre_cliente" placeholder="Tu nombre" />
+        </label>
+
+        <label>
+          <span>Correo</span>
+          <input type="email" formControlName="correo_cliente" placeholder="correo@dominio.com" />
+        </label>
+
+        <label>
+          <span>Telefono</span>
+          <input type="tel" formControlName="telefono_cliente" placeholder="3001234567" />
+        </label>
+
+        <label>
+          <span>Ciudad</span>
+          <input type="text" formControlName="ciudad_cliente" placeholder="Bogota" />
+        </label>
+
+        <label class="checkout-form__full">
+          <span>Notas del pedido</span>
+          <textarea rows="3" formControlName="observaciones" placeholder="Instrucciones, horario o detalles de entrega"></textarea>
+        </label>
+
+        <div class="checkout-form__summary">
+          <span>Subtotal</span>
+          <strong>{{ cartSubtotal() | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong>
+        </div>
+
+        @if (errorMessage()) {
+          <p class="checkout-form__error">{{ errorMessage() }}</p>
+        }
+
+        <button class="checkout-form__submit" type="submit" [disabled]="submitting() || !items().length">
+          {{ submitting() ? 'Procesando...' : 'Confirmar pedido' }}
+        </button>
+      </form>
+    </aside>
+  }
+
+  @if (home()) {
+    <app-floating-buttons
+      [promoLabel]="home()!.promo.label"
+      [promoUrl]="home()!.promo.url"
+      [helpText]="home()!.support.help_text"
+      [whatsappUrl]="home()!.support.whatsapp_url"
+    />
+  }
+</section>

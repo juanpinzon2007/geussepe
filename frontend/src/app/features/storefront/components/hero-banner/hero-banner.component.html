@@ -1,0 +1,36 @@
+<section class="hero" aria-label="Banner principal">
+  <div class="hero__ambient hero__ambient--left"></div>
+  <div class="hero__ambient hero__ambient--right"></div>
+
+  <div class="hero__copy">
+    <span class="hero__eyebrow">{{ hero?.title }}</span>
+    <p class="hero__subtitle">{{ hero?.subtitle }}</p>
+  </div>
+
+  <div class="hero__stage">
+    <span class="hero__pedestal hero__pedestal--left"></span>
+    <span class="hero__pedestal hero__pedestal--center"></span>
+    <span class="hero__pedestal hero__pedestal--right"></span>
+
+    @for (product of hero?.products ?? []; track trackByProduct($index)) {
+      <article class="hero__product-card">
+        @if (product.image_url) {
+          <img class="hero__product-image" [src]="product.image_url" [alt]="product.title" />
+        } @else {
+          <div class="hero__product-placeholder" aria-hidden="true">
+            <span>{{ product.title.slice(0, 1) }}</span>
+          </div>
+        }
+
+        <div class="hero__product-meta">
+          <strong>{{ product.title }}</strong>
+          <span>{{ product.category_name }}</span>
+        </div>
+      </article>
+    }
+  </div>
+
+  <button class="hero__cta" type="button" (click)="buyNow.emit()">
+    {{ hero?.button_text ?? 'Compralo ya' }}
+  </button>
+</section>

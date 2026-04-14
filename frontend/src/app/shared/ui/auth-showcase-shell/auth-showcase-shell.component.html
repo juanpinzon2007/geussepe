@@ -1,0 +1,35 @@
+<main class="auth-showcase auth-dark-theme" [class.auth-showcase--compact]="compact()">
+  <section class="auth-showcase__panel">
+    <div class="auth-showcase__panel-copy">
+      <span class="auth-showcase__panel-kicker">{{ eyebrow() }}</span>
+      <h1>{{ panelTitle() }}</h1>
+      <p>{{ panelSubtitle() }}</p>
+    </div>
+
+    <div class="auth-showcase__slot">
+      <ng-content />
+    </div>
+  </section>
+
+  <section class="auth-showcase__hero">
+    <div class="auth-showcase__hero-copy">
+      <span class="auth-showcase__eyebrow">{{ eyebrow() }}</span>
+      <h2>{{ title() }}</h2>
+      <p>{{ subtitle() }}</p>
+
+      @if (bullets().length) {
+        <ul class="auth-showcase__bullets">
+          @for (item of bullets(); track item) {
+            <li>{{ item }}</li>
+          }
+        </ul>
+      }
+    </div>
+
+    <div class="auth-showcase__aurora auth-showcase__aurora--one"></div>
+    <div class="auth-showcase__aurora auth-showcase__aurora--two"></div>
+    <div class="auth-showcase__aurora auth-showcase__aurora--three"></div>
+    <div class="auth-showcase__orb auth-showcase__orb--one"></div>
+    <div class="auth-showcase__orb auth-showcase__orb--two"></div>
+  </section>
+</main>
