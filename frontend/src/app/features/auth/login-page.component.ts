@@ -24,16 +24,13 @@ import { AuthShowcaseShellComponent } from '../../shared/ui/auth-showcase-shell/
   ],
   template: `
     <app-auth-showcase-shell
-      eyebrow="El Desquite 😈"
-      title="Gestion premium para tu tienda sensual"
-      subtitle="Un acceso mas elegante, visual y consistente con la identidad comercial de El Desquite."
+      eyebrow="El Desquite"
+      title="Acceso privado"
+      subtitle="Entra al panel con el mismo look sensual, claro y elegante de la tienda."
       panelTitle="Iniciar sesion"
-      panelSubtitle="Usa tus credenciales para entrar al panel operativo con el nuevo look premium."
-      [bullets]="[
-        'Acceso visual unificado con la tienda',
-        'Interfaz mas limpia para gestion y operaciones',
-        'Catalogo, pedidos y clientes desde un solo lugar'
-      ]"
+      panelSubtitle="Ingresa tus datos y entra directo. Sin bloques extra, sin distracciones."
+      [heroVisible]="false"
+      [compact]="true"
     >
       <form [formGroup]="form" (ngSubmit)="submit()" class="premium-form-grid auth-form">
         <mat-form-field class="full-span">
@@ -63,7 +60,7 @@ import { AuthShowcaseShellComponent } from '../../shared/ui/auth-showcase-shell/
         </mat-form-field>
 
         <button mat-flat-button color="primary" class="full-span auth-form__submit" type="submit">
-          Entrar al panel
+          Entrar
         </button>
       </form>
 
@@ -75,12 +72,18 @@ import { AuthShowcaseShellComponent } from '../../shared/ui/auth-showcase-shell/
   `,
   styles: `
     :host {
-      display: block;
+      display: grid;
+      align-items: center;
+      min-height: 100vh;
       padding: 1.2rem;
+      background:
+        radial-gradient(circle at top left, rgba(255, 84, 84, 0.2), transparent 22%),
+        radial-gradient(circle at bottom right, rgba(139, 0, 0, 0.14), transparent 26%),
+        linear-gradient(180deg, #060202, #190506 46%, #280709);
     }
 
     .auth-form {
-      gap: 1.1rem;
+      gap: 1rem;
     }
 
     .auth-form__submit {
@@ -94,12 +97,12 @@ import { AuthShowcaseShellComponent } from '../../shared/ui/auth-showcase-shell/
       justify-content: space-between;
       gap: 1rem;
       margin-top: 1rem;
-      color: rgba(229, 235, 255, 0.72);
+      color: var(--color-ink-soft);
       font-weight: 700;
     }
 
     .auth-form__footer a {
-      color: #7be3ff;
+      color: var(--color-primary-strong);
       font-weight: 600;
     }
 

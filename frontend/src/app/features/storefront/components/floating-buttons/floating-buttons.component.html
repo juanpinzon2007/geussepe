@@ -10,11 +10,53 @@
     <span>{{ promoLabel }}</span>
   </a>
 
-  <div class="floating-ui__support-box">
-    {{ helpText }}
-  </div>
+  @if (chatOpen()) {
+    <section class="floating-ui__chat" aria-label="Chat de ayuda">
+      <div class="floating-ui__chat-header">
+        <div>
+          <strong>{{ assistantName }}</strong>
+          <p>{{ helpText }}</p>
+        </div>
 
-  <a class="floating-ui__whatsapp" [href]="whatsappUrl" target="_blank" rel="noreferrer" aria-label="Abrir WhatsApp">
+        <button type="button" class="floating-ui__close" (click)="closeChat()" aria-label="Cerrar chat">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <div class="floating-ui__messages">
+        @for (message of messages(); track trackByMessage($index)) {
+          <article
+            class="floating-ui__message"
+            [class.floating-ui__message--user]="message.role === 'user'"
+          >
+            {{ message.text }}
+          </article>
+        }
+      </div>
+
+      <div class="floating-ui__quick-actions">
+        @for (action of quickActions; track action) {
+          <button type="button" (click)="sendQuickAction(action)">
+            {{ action }}
+          </button>
+        }
+      </div>
+
+      <div class="floating-ui__composer">
+        <input
+          type="text"
+          placeholder="Escribe tu duda sin pena"
+          [value]="draft()"
+          (input)="updateDraft($any($event.target).value)"
+          (keydown.enter)="sendDraft()"
+        />
+        <button type="button" (click)="sendDraft()">Enviar</button>
+      </div>
+    </section>
+  }
+
+  <button class="floating-ui__launcher" type="button" (click)="toggleChat()" aria-label="Abrir chat">
     <span class="material-symbols-outlined">forum</span>
-  </a>
+    <span>{{ chatOpen() ? 'Ocultar chat' : 'Chat atrevido' }}</span>
+  </button>
 </div>

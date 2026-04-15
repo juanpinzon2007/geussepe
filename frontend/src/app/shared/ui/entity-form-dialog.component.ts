@@ -37,16 +37,18 @@ interface EntityFormDialogData {
           {{ data.isCreate ? 'Crear' : 'Actualizar' }} {{ data.config.title.toLowerCase() }}
         </h2>
         <p class="muted">
-          Usa un formulario mas limpio y consistente para capturar la informacion operativa.
+          Completa los campos con una lectura mas simple, directa y comoda.
         </p>
       </div>
 
       <mat-dialog-content>
         @if (guidedFields.length) {
-          <form [formGroup]="form" class="premium-form-grid">
+          <form [formGroup]="form" class="premium-form-grid dialog-shell__form">
             @for (field of guidedFields; track field.key) {
               @if (field.type === 'checkbox') {
-                <mat-checkbox [formControlName]="field.key">{{ field.label }}</mat-checkbox>
+                <div class="dialog-shell__check">
+                  <mat-checkbox [formControlName]="field.key">{{ field.label }}</mat-checkbox>
+                </div>
               } @else {
                 <mat-form-field [class.full-span]="field.type === 'textarea'">
                   <mat-label>{{ field.label }}</mat-label>
@@ -104,9 +106,11 @@ interface EntityFormDialogData {
 
     .dialog-shell__header h2 {
       margin: 0;
-      font-family: var(--font-display);
-      font-size: 1.8rem;
-      letter-spacing: -0.06em;
+      font-family: var(--font-sensual);
+      font-size: 2.6rem;
+      font-weight: 700;
+      line-height: 0.9;
+      letter-spacing: -0.04em;
       color: var(--color-ink);
     }
 
@@ -114,12 +118,25 @@ interface EntityFormDialogData {
       margin: 0;
     }
 
+    .dialog-shell__form {
+      align-items: start;
+    }
+
+    .dialog-shell__check {
+      display: flex;
+      align-items: center;
+      min-height: 3.5rem;
+      padding: 0 0.15rem;
+    }
+
     .full-width {
       width: 100%;
     }
 
     mat-dialog-content {
-      min-width: min(860px, 88vw);
+      width: min(920px, calc(100vw - 1.5rem));
+      min-width: 0;
+      max-width: 100%;
       padding-top: 0.5rem;
     }
 
@@ -128,7 +145,7 @@ interface EntityFormDialogData {
     }
 
     mat-checkbox {
-      padding: 0.6rem 0;
+      padding: 0.2rem 0;
     }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,

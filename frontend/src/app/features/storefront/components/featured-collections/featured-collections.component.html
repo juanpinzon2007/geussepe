@@ -1,18 +1,17 @@
-<section class="collections" aria-labelledby="featured-collections-title">
+<section class="collections" aria-labelledby="collections-title">
   <div class="collections__header">
-    <h2 id="featured-collections-title">Colecciones destacadas</h2>
+    <span class="collections__eyebrow">Categorias eroticas</span>
+    <h2 id="collections-title">Explora por deseo</h2>
+    <p>
+      Portadas intensas, texto claro y cada categoria conectada con productos reales para comprar
+      sin perder la funcionalidad de la tienda.
+    </p>
   </div>
 
-  <div class="collections__scroller">
+  <div class="collections__grid">
     @for (collection of collections; track trackByCollection($index, collection)) {
-      <button
-        class="collections__card collections__card--{{ collection.tone }}"
-        type="button"
-        (click)="collectionSelected.emit(collection)"
-      >
-        <div class="collections__visual">
-          <span class="collections__pedestal" aria-hidden="true"></span>
-
+      <button class="collections__card" type="button" (click)="selectCollection(collection)">
+        <div class="collections__media">
           @if (collection.image_url) {
             <img [src]="collection.image_url" [alt]="collection.title" />
           } @else {
@@ -20,9 +19,26 @@
               <span>{{ collection.title.slice(0, 1) }}</span>
             </div>
           }
-        </div>
 
-        <span class="collections__label">{{ collection.title }}</span>
+          <div class="collections__glow"></div>
+          <div class="collections__veil"></div>
+
+          <span class="collections__count">{{ collection.total_products }} productos</span>
+
+          <div class="collections__copy">
+            <span class="collections__kicker">Clic aqui</span>
+            <h3>{{ collection.title }}</h3>
+            <p>{{ getSpotlight(collection) }}</p>
+
+            <div class="collections__chips">
+              @for (item of previewItems(collection); track item) {
+                <span>{{ item }}</span>
+              }
+            </div>
+
+            <span class="collections__cta">Ver categoria</span>
+          </div>
+        </div>
       </button>
     }
   </div>

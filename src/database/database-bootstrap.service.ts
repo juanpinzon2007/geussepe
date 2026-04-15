@@ -4,6 +4,10 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import bcrypt from "bcryptjs";
 import { DatabaseService } from "./database.service";
+import {
+  STOREFRONT_PRICE_START,
+  STOREFRONT_SEED_CATEGORIES,
+} from "../modules/storefront/storefront-catalog.seed";
 
 interface SeedRole {
   codigo: string;
@@ -106,6 +110,7 @@ export class DatabaseBootstrapService implements OnModuleInit {
     await this.ensureSchema();
     await this.seedSecurity();
     await this.seedMovementTypes();
+    await this.seedStorefrontCatalog();
   }
 
   private async ensureSchema(): Promise<void> {
@@ -230,5 +235,192 @@ export class DatabaseBootstrapService implements OnModuleInit {
         [...movementType],
       );
     }
+  }
+
+  private async seedStorefrontCatalog(): Promise<void> {
+    const unit = await this.db.query<{ id_unidad_medida: string }>(
+      `
+      INSERT INTO maestros.unidades_medida (codigo, nombre, descripcion, activo)
+      VALUES ('UND', 'Unidad', 'Unidad comercial base', true)
+      ON CONFLICT (codigo) DO UPDATE
+        SET nombre = EXCLUDED.nombre,
+            descripcion = EXCLUDED.descripcion,
+            activo = true
+      RETURNING id_unidad_medida
+      `,
+    );
+
+    const currency = await this.db.query<{ id_moneda: string }>(
+      `
+      INSERT INTO maestros.monedas (codigo, nombre, simbolo, activo)
+      VALUES ('COP', 'Peso colombiano', '$', true)
+      ON CONFLICT (codigo) DO UPDATE
+        SET nombre = EXCLUDED.nombre,
+            simbolo = EXCLUDED.simbolo,
+            activo = true
+      RETURNING id_moneda
+      `,
+    );
+
+    const salesChannel = await this.db.query<{ id_canal_venta: string }>(
+      `
+      INSERT INTO maestros.canales_venta (codigo, nombre, tipo_canal, activo)
+      VALUES ('ECOMMERCE', 'Tienda online', 'ECOMMERCE', true)
+      ON CONFLICT (codigo) DO UPDATE
+        SET nombre = EXCLUDED.nombre,
+            tipo_canal = EXCLUDED.tipo_canal,
+            activo = true
+      RETURNING id_canal_venta
+      `,
+    );
+
+    const priceList = await this.db.query<{ id_lista_precio: string }>(
+      `
+      INSERT INTO maestros.listas_precios (
+        codigo, nombre, id_moneda, id_canal_venta, descripcion,
+        fecha_inicio_vigencia, activa
+      )
+      VALUES ($1, $2, $3, $4, $5, $6::date, true)
+      ON CONFLICT (codigo) DO UPDATE
+        SET nombre = EXCLUDED.nombre,
+            id_moneda = EXCLUDED.id_moneda,
+            id_canal_venta = EXCLUDED.id_canal_venta,
+            descripcion = EXCLUDED.descripcion,
+            fecha_inicio_vigencia = EXCLUDED.fecha_inicio_vigencia,
+            activa = true
+      RETURNING id_lista_precio
+      `,
+      [
+        "LISTA-ECOMMERCE",
+        "Lista ecommerce El Desquite",
+        currency.rows[0]?.id_moneda,
+        salesChannel.rows[0]?.id_canal_venta,
+        "Lista publica del catalogo erotico online",
+        STOREFRONT_PRICE_START,
+      ],
+    );
+
+    const unitId = unit.rows[0]?.id_unidad_medida;
+    const priceListId = priceList.rows[0]?.id_lista_precio;
+
+    for (const category of STOREFRONT_SEED_CATEGORIES) {
+      const categoryResult = await this.db.query<{ id_categoria_producto: string }>(
+        `
+        INSERT INTO maestros.categorias_producto (
+          codigo, nombre, descripcion, nivel, permite_venta_menores, activo
+        )
+        VALUES ($1, $2, $3, 1, false, true)
+        ON CONFLICT (codigo) DO UPDATE
+          SET nombre = EXCLUDED.nombre,
+              descripcion = EXCLUDED.descripcion,
+              nivel = 1,
+              permite_venta_menores = false,
+              activo = true
+        RETURNING id_categoria_producto
+        `,
+        [category.code, category.name, category.description],
+      );
+
+      const categoryId = categoryResult.rows[0]?.id_categoria_producto;
+
+      for (const [index, item] of category.items.entries()) {
+        const sku = this.buildSku(category.code, index);
+        const price = category.basePrice + category.priceStep * index;
+        const isKit = item.toLowerCase().includes("kit");
+        const productResult = await this.db.query<{ id_producto: string }>(
+          `
+          INSERT INTO maestros.productos (
+            sku, nombre, nombre_corto, descripcion, id_categoria_producto,
+            id_unidad_medida_base, tipo_producto, subtipo_producto,
+            es_inventariable, maneja_lotes, maneja_vencimiento,
+            requiere_registro_sanitario, requiere_control_mayoria_edad,
+            es_restringido, es_kit, temperatura_minima, temperatura_maxima,
+            url_imagen_principal, activo, observaciones
+          )
+          VALUES (
+            $1, $2, $3, $4, $5, $6, $7, $8,
+            true, $9, $10, $11, true, true, $12, $13, $14, $15, true, $16
+          )
+          ON CONFLICT (sku) DO UPDATE
+            SET nombre = EXCLUDED.nombre,
+                nombre_corto = EXCLUDED.nombre_corto,
+                descripcion = EXCLUDED.descripcion,
+                id_categoria_producto = EXCLUDED.id_categoria_producto,
+                id_unidad_medida_base = EXCLUDED.id_unidad_medida_base,
+                tipo_producto = EXCLUDED.tipo_producto,
+                subtipo_producto = EXCLUDED.subtipo_producto,
+                maneja_lotes = EXCLUDED.maneja_lotes,
+                maneja_vencimiento = EXCLUDED.maneja_vencimiento,
+                requiere_registro_sanitario = EXCLUDED.requiere_registro_sanitario,
+                requiere_control_mayoria_edad = true,
+                es_restringido = true,
+                es_kit = EXCLUDED.es_kit,
+                temperatura_minima = EXCLUDED.temperatura_minima,
+                temperatura_maxima = EXCLUDED.temperatura_maxima,
+                url_imagen_principal = EXCLUDED.url_imagen_principal,
+                activo = true,
+                observaciones = EXCLUDED.observaciones
+          RETURNING id_producto
+          `,
+          [
+            sku,
+            item,
+            item,
+            this.buildProductDescription(item, category.name, category.description),
+            categoryId,
+            unitId,
+            category.type,
+            item,
+            category.handlesLots,
+            category.handlesExpiry,
+            category.requiresSanitary,
+            isKit,
+            category.storageMin ?? null,
+            category.storageMax ?? null,
+            category.imageUrl,
+            "Catalogo curado para la tienda sensual ecommerce",
+          ],
+        );
+
+        await this.db.query(
+          `
+          INSERT INTO maestros.precios_producto (
+            id_producto, id_lista_precio, precio_base, costo_referencia,
+            margen_objetivo_pct, precio_minimo, precio_maximo, incluye_impuestos,
+            fecha_inicio_vigencia, activo
+          )
+          VALUES ($1, $2, $3, $4, 45, $5, $6, true, $7::date, true)
+          ON CONFLICT (id_producto, id_lista_precio, fecha_inicio_vigencia) DO UPDATE
+            SET precio_base = EXCLUDED.precio_base,
+                costo_referencia = EXCLUDED.costo_referencia,
+                precio_minimo = EXCLUDED.precio_minimo,
+                precio_maximo = EXCLUDED.precio_maximo,
+                incluye_impuestos = true,
+                activo = true
+          `,
+          [
+            productResult.rows[0]?.id_producto,
+            priceListId,
+            price,
+            Math.round(price * 0.55),
+            Math.round(price * 0.88),
+            Math.round(price * 1.18),
+            STOREFRONT_PRICE_START,
+          ],
+        );
+      }
+    }
+
+    this.logger.log(
+      `Catalogo storefront asegurado con ${STOREFRONT_SEED_CATEGORIES.length} categorias eroticas`,
+    );
+  }
+
+  private buildSku(categoryCode: string, index: number) {
+    return `${categoryCode.replace(/[^A-Z0-9]/g, "").slice(0, 12)}-${String(index + 1).padStart(3, "0")}`;
+  }
+
+  private buildProductDescription(item: string, categoryName: string, categoryDescription: string) {
+    return `${item} dentro de ${categoryName.toLowerCase()}. ${categoryDescription}`;
   }
 }

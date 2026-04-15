@@ -3,6 +3,7 @@ import { ApiOperation, ApiTags } from "@nestjs/swagger";
 import { DatabaseModule } from "../../database/database.module";
 import { DatabaseService } from "../../database/database.service";
 import { SalesModule, SalesService } from "../sales/sales.module";
+import { STOREFRONT_SEED_CATEGORIES } from "./storefront-catalog.seed";
 
 type StorefrontProductRow = {
   id_producto: string;
@@ -19,6 +20,7 @@ type StorefrontProductRow = {
 
 type StorefrontCollectionRow = {
   id_categoria_producto: string;
+  codigo: string;
   nombre: string;
   descripcion: string | null;
   total_productos: string | number;
@@ -27,13 +29,16 @@ type StorefrontCollectionRow = {
   lead_product_image: string | null;
 };
 
-const FALLBACK_PRODUCT_IMAGES = [
-  "/assets/store/rabbit-vibe.svg",
-  "/assets/store/couple-kit.svg",
-  "/assets/store/lubricant-glow.svg",
-  "/assets/store/lace-set.svg",
-  "/assets/store/plug-night.svg",
-];
+const STOREFRONT_CATEGORY_CODES = STOREFRONT_SEED_CATEGORIES.map((category) => category.code);
+const CATEGORY_ORDER_SQL = STOREFRONT_SEED_CATEGORIES.map(
+  (category, index) => `WHEN '${category.code}' THEN ${index}`,
+).join("\n            ");
+const CATEGORY_IMAGE_BY_NAME = new Map(
+  STOREFRONT_SEED_CATEGORIES.map((category) => [category.name, category.imageUrl]),
+);
+const CATEGORY_IMAGE_BY_CODE = new Map(
+  STOREFRONT_SEED_CATEGORIES.map((category) => [category.code, category.imageUrl]),
+);
 
 class StorefrontOrderDto {
   nombre_cliente?: string;
@@ -94,20 +99,22 @@ export class StorefrontService {
         LEFT JOIN stock
           ON stock.id_producto = p.id_producto
         WHERE p.activo = true
+          AND c.codigo = ANY($1::text[])
         ORDER BY
-          CASE
-            WHEN lower(COALESCE(p.nombre_corto, p.nombre)) LIKE '%conejo%' THEN 0
-            ELSE 1
+          CASE c.codigo
+            ${CATEGORY_ORDER_SQL}
+            ELSE ${STOREFRONT_SEED_CATEGORIES.length}
           END,
-          p.fecha_creacion DESC,
+          p.sku ASC,
           p.nombre ASC
-        LIMIT 8
         `,
+        [STOREFRONT_CATEGORY_CODES],
       ),
       this.db.query<StorefrontCollectionRow>(
         `
         SELECT
           c.id_categoria_producto,
+          c.codigo,
           c.nombre,
           c.descripcion,
           COUNT(p.id_producto) AS total_productos,
@@ -123,21 +130,28 @@ export class StorefrontService {
           FROM maestros.productos p2
           WHERE p2.id_categoria_producto = c.id_categoria_producto
             AND p2.activo = true
-          ORDER BY p2.fecha_creacion DESC, p2.nombre ASC
+          ORDER BY p2.sku ASC, p2.nombre ASC
           LIMIT 1
         ) lead ON true
         WHERE c.activo = true
+          AND c.codigo = ANY($1::text[])
         GROUP BY
           c.id_categoria_producto,
+          c.codigo,
           c.nombre,
           c.descripcion,
           lead.id_producto,
           lead.nombre,
           lead.url_imagen_principal
         HAVING COUNT(p.id_producto) > 0
-        ORDER BY COUNT(p.id_producto) DESC, c.nombre ASC
-        LIMIT 4
+        ORDER BY
+          CASE c.codigo
+            ${CATEGORY_ORDER_SQL}
+            ELSE ${STOREFRONT_SEED_CATEGORIES.length}
+          END,
+          c.nombre ASC
         `,
+        [STOREFRONT_CATEGORY_CODES],
       ),
     ]);
 
@@ -146,13 +160,14 @@ export class StorefrontService {
 
     return {
       brand: {
-        name: "El Desquite 😈",
-        subtitle: "Tienda sensual mobile-first",
+        name: "El Desquite",
+        subtitle: "Sex shop premium y discreto",
       },
       hero: {
-        title: "Coleccion premium",
-        subtitle: "Conejitos, kits y placer premium con una vitrina femenina, limpia y moderna.",
-        button_text: "Compralo ya",
+        title: "Deseo sin filtro",
+        subtitle:
+          "Explora lenceria, juguetes, lubricantes, BDSM, smart toys y rituales eroticos con una vitrina intensa, clara y lista para comprar.",
+        button_text: "Agregar favoritos",
         products: heroProducts,
       },
       collections: collectionsResult.rows.map((row, index) => ({
@@ -162,7 +177,7 @@ export class StorefrontService {
         total_products: Number(row.total_productos ?? 0),
         lead_product_id: row.lead_product_id,
         lead_product_name: row.lead_product_name,
-        image_url: row.lead_product_image,
+        image_url: row.lead_product_image ?? CATEGORY_IMAGE_BY_CODE.get(row.codigo) ?? null,
         tone: this.getCollectionTone(index),
       })),
       products,
@@ -174,7 +189,7 @@ export class StorefrontService {
         url: "https://es.stripchat.com/",
       },
       support: {
-        help_text: "Ayuda y pedidos: 3102423080",
+        help_text: "Candela resuelve dudas de juguetes, lubricantes, lenceria y pedidos discretos.",
         whatsapp_url:
           process.env.STOREFRONT_WHATSAPP_URL ??
           "https://wa.me/573102423080?text=Hola,%20quiero%20ayuda%20con%20mi%20pedido",
@@ -227,27 +242,16 @@ export class StorefrontService {
   }
 
   private resolveFallbackImage(row: StorefrontProductRow) {
-    const normalized = `${row.nombre} ${row.tipo_producto}`.toLowerCase();
-    if (normalized.includes("conejo") || normalized.includes("rabbit")) {
-      return FALLBACK_PRODUCT_IMAGES[0];
-    }
-    if (normalized.includes("kit")) {
-      return FALLBACK_PRODUCT_IMAGES[1];
-    }
-    if (normalized.includes("lub")) {
-      return FALLBACK_PRODUCT_IMAGES[2];
-    }
-    if (normalized.includes("lencer")) {
-      return FALLBACK_PRODUCT_IMAGES[3];
-    }
-    if (normalized.includes("plug")) {
-      return FALLBACK_PRODUCT_IMAGES[4];
+    if (row.categoria_nombre && CATEGORY_IMAGE_BY_NAME.has(row.categoria_nombre)) {
+      return CATEGORY_IMAGE_BY_NAME.get(row.categoria_nombre)!;
     }
 
-    const imageIndex = Math.abs(
-      Array.from(row.id_producto).reduce((acc, char) => acc + char.charCodeAt(0), 0),
+    const normalized = `${row.nombre} ${row.tipo_producto}`.toLowerCase();
+    const matchingCategory = STOREFRONT_SEED_CATEGORIES.find((category) =>
+      normalized.includes(category.name.split(" ")[0].toLowerCase()),
     );
-    return FALLBACK_PRODUCT_IMAGES[imageIndex % FALLBACK_PRODUCT_IMAGES.length];
+
+    return matchingCategory?.imageUrl ?? STOREFRONT_SEED_CATEGORIES[0].imageUrl;
   }
 
   private resolveFallbackPrice(row: StorefrontProductRow) {

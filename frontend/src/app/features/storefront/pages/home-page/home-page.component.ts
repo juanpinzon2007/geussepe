@@ -22,6 +22,10 @@ import { FeaturedCollectionsComponent } from '../../components/featured-collecti
 import { FloatingButtonsComponent } from '../../components/floating-buttons/floating-buttons.component';
 import { HeaderComponent } from '../../components/header/header.component';
 import { HeroBannerComponent } from '../../components/hero-banner/hero-banner.component';
+import {
+  STOREFRONT_CATALOG_SECTIONS as STOREFRONT_CATALOG_SECTIONS_DATA,
+  STOREFRONT_TECHNICAL_ATTRIBUTES as STOREFRONT_TECHNICAL_ATTRIBUTES_DATA,
+} from '../../data-access/storefront-curation.data';
 
 @Component({
   selector: 'app-home-page',
@@ -63,7 +67,14 @@ export class HomePageComponent {
   readonly cartCount = this.cartStore.count;
   readonly cartSubtotal = this.cartStore.subtotal;
   readonly isAuthenticated = this.sessionStore.isAuthenticated;
+  readonly catalogSections = STOREFRONT_CATALOG_SECTIONS_DATA;
+  readonly technicalAttributes = STOREFRONT_TECHNICAL_ATTRIBUTES_DATA;
   readonly products = computed(() => this.home()?.products ?? []);
+  readonly activeCollection = computed(
+    () =>
+      this.home()?.collections.find((collection) => collection.id === this.selectedCollectionId()) ?? null,
+  );
+  readonly filteredProductCount = computed(() => this.filteredProducts().length);
   readonly filteredProducts = computed(() => {
     const collectionId = this.selectedCollectionId();
     const term = this.searchTerm().trim().toLowerCase();
