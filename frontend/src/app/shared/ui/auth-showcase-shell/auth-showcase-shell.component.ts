@@ -18,4 +18,5 @@ export class AuthShowcaseShellComponent {
   readonly panelSubtitle = input('Continua con tu operacion.');
   readonly compact = input(false);
   readonly heroVisible = input(true);
+  readonly centered = input(false);
 }

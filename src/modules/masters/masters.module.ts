@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
@@ -8,9 +9,15 @@ import {
   Patch,
   Post,
   Query,
+  Req,
   UseGuards,
 } from "@nestjs/common";
 import { ApiBearerAuth, ApiOperation, ApiTags } from "@nestjs/swagger";
+import { randomUUID } from "node:crypto";
+import { createWriteStream } from "node:fs";
+import { mkdir } from "node:fs/promises";
+import { extname, join } from "node:path";
+import { pipeline } from "node:stream/promises";
 import { AuthUser, CurrentUser } from "../../common/current-user.decorator";
 import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
 import { Permissions, PermissionsGuard } from "../../common/guards/permissions.guard";
@@ -24,6 +31,7 @@ import {
 import { DatabaseModule } from "../../database/database.module";
 import { DatabaseService } from "../../database/database.service";
 import { AuditModule, AuditService } from "../audit/audit.module";
+import { FastifyRequest } from "fastify";
 
 const MASTER_ENTITY_CONFIGS: Record<string, EntityConfig> = {
   countries: {
@@ -575,12 +583,89 @@ export class MastersService {
     };
   }
 
+  async uploadProductImage(request: FastifyRequest, actor?: AuthUser) {
+    const file = await request.file();
+    if (!file) {
+      throw new BadRequestException("Debes seleccionar una imagen.");
+    }
+
+    if (!file.mimetype.startsWith("image/")) {
+      throw new BadRequestException("Solo se permiten archivos de imagen.");
+    }
+
+    const uploadsDirectory = join(process.cwd(), "uploads", "products");
+    await mkdir(uploadsDirectory, { recursive: true });
+
+    const extension = this.resolveImageExtension(file.filename, file.mimetype);
+    const fileName = `${Date.now()}-${randomUUID()}${extension}`;
+    const filePath = join(uploadsDirectory, fileName);
+
+    await pipeline(file.file, createWriteStream(filePath));
+
+    const publicPath = `/uploads/products/${fileName}`;
+    const publicUrl = this.resolvePublicUrl(request, publicPath);
+
+    await this.auditService.logEvent({
+      modulo: "masters",
+      nombreTabla: "maestros.productos",
+      tipoEvento: "OTRO",
+      descripcion: "Carga de imagen de producto",
+      idUsuario: actor?.id_usuario ?? null,
+      valorNuevo: {
+        archivo: fileName,
+        ruta: publicPath,
+        url: publicUrl,
+      },
+    });
+
+    return {
+      filename: fileName,
+      path: publicPath,
+      url: publicUrl,
+    };
+  }
+
   private getConfig(entity: string) {
     const config = MASTER_ENTITY_CONFIGS[entity];
     if (!config) {
       throw new Error(`Entidad maestra no soportada: ${entity}`);
     }
     return config;
+  }
+
+  private resolveImageExtension(filename: string, mimeType: string) {
+    const currentExtension = extname(filename).toLowerCase();
+    if (currentExtension) {
+      return currentExtension;
+    }
+
+    if (mimeType === "image/png") {
+      return ".png";
+    }
+    if (mimeType === "image/webp") {
+      return ".webp";
+    }
+    if (mimeType === "image/gif") {
+      return ".gif";
+    }
+
+    return ".jpg";
+  }
+
+  private resolvePublicUrl(request: FastifyRequest, publicPath: string) {
+    const hostHeader = request.headers["x-forwarded-host"] ?? request.headers.host;
+    const protocolHeader = request.headers["x-forwarded-proto"];
+    const host = Array.isArray(hostHeader) ? hostHeader[0] : hostHeader;
+    const protocol =
+      (Array.isArray(protocolHeader) ? protocolHeader[0] : protocolHeader) ??
+      request.protocol ??
+      "http";
+
+    if (!host) {
+      return publicPath;
+    }
+
+    return `${protocol}://${host}${publicPath}`;
   }
 }
 
@@ -608,6 +693,12 @@ export class MastersController {
   @ApiOperation({ summary: "Consultar perfil completo del producto" })
   async productProfile(@Param("id") id: string) {
     return this.mastersService.getProductProfile(id);
+  }
+
+  @Post("products/upload-image")
+  @ApiOperation({ summary: "Subir imagen principal de producto" })
+  async uploadProductImage(@Req() request: FastifyRequest, @CurrentUser() user: AuthUser) {
+    return this.mastersService.uploadProductImage(request, user);
   }
 
   @Get(":entity")

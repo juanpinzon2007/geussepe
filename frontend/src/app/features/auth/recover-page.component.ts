@@ -20,12 +20,13 @@ import { AuthShowcaseShellComponent } from '../../shared/ui/auth-showcase-shell/
   ],
   template: `
     <app-auth-showcase-shell
-      eyebrow="El Desquite"
+      eyebrow="Recuperacion"
       title="Recuperar acceso"
       subtitle="Solicita tu recuperacion con la misma experiencia elegante del resto de la tienda."
       panelTitle="Recuperar contrasena"
       panelSubtitle="Escribe tu usuario o correo y te enviamos la ruta para volver a entrar."
       [heroVisible]="false"
+      [centered]="true"
       [compact]="true"
     >
       <form [formGroup]="form" (ngSubmit)="submit()" class="premium-form-grid recover-form">
@@ -41,6 +42,7 @@ import { AuthShowcaseShellComponent } from '../../shared/ui/auth-showcase-shell/
 
       <div class="recover-form__footer">
         <a routerLink="/auth/login">Volver al login</a>
+        <a routerLink="/auth/register">Crear cuenta</a>
       </div>
     </app-auth-showcase-shell>
   `,
@@ -61,6 +63,9 @@ import { AuthShowcaseShellComponent } from '../../shared/ui/auth-showcase-shell/
     }
 
     .recover-form__footer {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
       margin-top: 1rem;
     }
 

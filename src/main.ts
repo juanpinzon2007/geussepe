@@ -1,4 +1,8 @@
 import "reflect-metadata";
+import multipart from "@fastify/multipart";
+import fastifyStatic from "@fastify/static";
+import { mkdirSync } from "node:fs";
+import { join } from "node:path";
 import { ValidationPipe } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
 import { FastifyAdapter, NestFastifyApplication } from "@nestjs/platform-fastify";
@@ -13,9 +17,21 @@ async function bootstrap() {
     AppModule,
     new FastifyAdapter(),
   );
+  const uploadsRoot = join(process.cwd(), "uploads");
+  mkdirSync(uploadsRoot, { recursive: true });
 
   await app.register(helmet);
   await app.register(cors, { origin: true });
+  await app.register(multipart, {
+    limits: {
+      files: 1,
+      fileSize: 6 * 1024 * 1024,
+    },
+  });
+  await app.register(fastifyStatic, {
+    root: uploadsRoot,
+    prefix: "/uploads/",
+  });
 
   app.setGlobalPrefix("api/v1");
   app.useGlobalPipes(

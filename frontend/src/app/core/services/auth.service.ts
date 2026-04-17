@@ -17,6 +17,22 @@ export class AuthService {
     );
   }
 
+  register(payload: {
+    nombres: string;
+    apellidos: string;
+    correo_electronico: string;
+    telefono?: string;
+    numero_documento?: string;
+    nombre_usuario: string;
+    password: string;
+  }) {
+    return this.api.post<AuthResponse>('/auth/register', payload).pipe(
+      tap((response) => {
+        this.sessionStore.setSession(response.access_token, response.user);
+      }),
+    );
+  }
+
   me() {
     return this.api.get<AuthResponse['user']>('/auth/me').pipe(
       tap((user) => {

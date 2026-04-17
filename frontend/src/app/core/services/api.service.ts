@@ -21,6 +21,12 @@ export class ApiService {
       .pipe(timeout(15000));
   }
 
+  upload<T>(path: string, payload: FormData) {
+    return this.http
+      .post<T>(`${this.baseUrl}${path}`, payload)
+      .pipe(timeout(30000));
+  }
+
   patch<T>(path: string, payload: unknown) {
     return this.http
       .patch<T>(`${this.baseUrl}${path}`, payload)

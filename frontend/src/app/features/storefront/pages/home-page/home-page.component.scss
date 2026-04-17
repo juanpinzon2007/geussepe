@@ -1,6 +1,7 @@
 .home {
   min-height: 100vh;
   padding: 0 0 8rem;
+  overflow-x: clip;
 
   &__canvas {
     max-width: 32rem;

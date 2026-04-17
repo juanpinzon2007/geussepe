@@ -23,7 +23,8 @@ export type FieldType =
   | 'textarea'
   | 'checkbox'
   | 'select'
-  | 'password';
+  | 'password'
+  | 'file';
 
 export interface SelectOptionConfig {
   endpoint: string;
@@ -42,6 +43,8 @@ export interface FieldConfig {
   hint?: string;
   rows?: number;
   defaultValue?: string | number | boolean | null;
+  accept?: string;
+  uploadEndpoint?: string;
   optionConfig?: SelectOptionConfig;
 }
 

@@ -8,7 +8,9 @@ export const guestGuard: CanActivateFn = () => {
   sessionStore.hydrate();
 
   if (sessionStore.isAuthenticated()) {
-    return router.createUrlTree(['/app/dashboard']);
+    const user = sessionStore.user();
+    const hasBackofficeAccess = Boolean(user?.permissions?.length || user?.roles?.length);
+    return router.createUrlTree([hasBackofficeAccess ? '/app/dashboard' : '/home']);
   }
 
   return true;

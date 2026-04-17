@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import {
   FormBuilder,
   ReactiveFormsModule,
@@ -9,7 +9,10 @@ import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
+import { ApiService } from '../../core/services/api.service';
+import { UiFeedbackService } from '../../core/services/ui-feedback.service';
 import { EntityConfig, FieldConfig } from '../../core/models/app.models';
 
 interface EntityFormDialogData {
@@ -26,6 +29,7 @@ interface EntityFormDialogData {
     MatCheckboxModule,
     MatDialogModule,
     MatFormFieldModule,
+    MatIconModule,
     MatInputModule,
     ReactiveFormsModule,
   ],
@@ -48,6 +52,52 @@ interface EntityFormDialogData {
               @if (field.type === 'checkbox') {
                 <div class="dialog-shell__check">
                   <mat-checkbox [formControlName]="field.key">{{ field.label }}</mat-checkbox>
+                </div>
+              } @else if (field.type === 'file') {
+                <div class="dialog-shell__file full-span">
+                  <mat-form-field class="full-width">
+                    <mat-label>{{ field.label }}</mat-label>
+                    <input
+                      matInput
+                      [formControlName]="field.key"
+                      [placeholder]="field.placeholder ?? 'Selecciona una imagen'"
+                      readonly
+                    >
+                    <button
+                      matSuffix
+                      mat-icon-button
+                      type="button"
+                      [disabled]="uploadingField() === field.key"
+                      (click)="filePicker.click()"
+                      aria-label="Subir imagen"
+                    >
+                      <mat-icon>
+                        {{ uploadingField() === field.key ? 'hourglass_top' : 'upload' }}
+                      </mat-icon>
+                    </button>
+                    @if (field.hint) {
+                      <mat-hint>{{ field.hint }}</mat-hint>
+                    }
+                  </mat-form-field>
+                  <input
+                    #filePicker
+                    class="dialog-shell__file-input"
+                    type="file"
+                    [accept]="field.accept ?? 'image/*'"
+                    (change)="onFileSelected(field, $event)"
+                  >
+                  @if (previewUrl(field); as preview) {
+                    <div class="dialog-shell__preview">
+                      <img [src]="preview" [alt]="field.label">
+                      <div class="dialog-shell__preview-copy">
+                        <strong>
+                          {{ uploadingField() === field.key ? 'Subiendo imagen...' : 'Imagen lista' }}
+                        </strong>
+                        <span class="muted">{{ preview }}</span>
+                        <button mat-button type="button" (click)="clearFile(field)">Quitar</button>
+                      </div>
+                    </div>
+                  }
                 </div>
               } @else {
                 <mat-form-field [class.full-span]="field.type === 'textarea'">
@@ -129,6 +179,47 @@ interface EntityFormDialogData {
       padding: 0 0.15rem;
     }
 
+    .dialog-shell__file {
+      display: grid;
+      gap: 0.85rem;
+    }
+
+    .dialog-shell__file-input {
+      display: none;
+    }
+
+    .dialog-shell__preview {
+      display: grid;
+      grid-template-columns: 110px minmax(0, 1fr);
+      gap: 1rem;
+      align-items: center;
+      padding: 0.9rem;
+      border-radius: 1.1rem;
+      background: rgba(255, 240, 244, 0.8);
+      border: 1px solid rgba(125, 29, 74, 0.14);
+    }
+
+    .dialog-shell__preview img {
+      width: 110px;
+      height: 110px;
+      object-fit: cover;
+      border-radius: 0.9rem;
+      background: rgba(255, 255, 255, 0.92);
+      box-shadow: 0 18px 35px rgba(70, 12, 36, 0.12);
+    }
+
+    .dialog-shell__preview-copy {
+      display: grid;
+      gap: 0.35rem;
+      min-width: 0;
+    }
+
+    .dialog-shell__preview-copy span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
     .full-width {
       width: 100%;
     }
@@ -154,10 +245,13 @@ export class EntityFormDialogComponent {
   readonly data = inject<EntityFormDialogData>(MAT_DIALOG_DATA);
   readonly dialogRef = inject(MatDialogRef<EntityFormDialogComponent>);
   private readonly fb = inject(FormBuilder);
+  private readonly api = inject(ApiService);
+  private readonly uiFeedback = inject(UiFeedbackService);
 
   readonly guidedFields = (this.data.config.formFields ?? []).filter(
     (field) => this.data.isCreate || field.key !== 'password',
   );
+  readonly uploadingField = signal<string | null>(null);
   readonly form = this.fb.group(
     this.guidedFields.reduce<Record<string, unknown>>((controls, field) => {
       controls[field.key] = [
@@ -173,6 +267,11 @@ export class EntityFormDialogComponent {
   );
 
   submit() {
+    if (this.uploadingField()) {
+      this.uiFeedback.info('Espera a que termine la carga de la imagen.');
+      return;
+    }
+
     if (this.guidedFields.length) {
       if (this.form.invalid) {
         this.form.markAllAsTouched();
@@ -202,6 +301,57 @@ export class EntityFormDialogComponent {
     } catch {
       this.jsonControl.setErrors({ invalidJson: true });
     }
+  }
+
+  onFileSelected(field: FieldConfig, event: Event) {
+    const input = event.target as HTMLInputElement | null;
+    const file = input?.files?.[0];
+    if (!file || !field.uploadEndpoint) {
+      return;
+    }
+
+    this.uploadingField.set(field.key);
+    const formData = new FormData();
+    formData.append('file', file);
+
+    this.api.upload<{ url?: string }>(field.uploadEndpoint, formData).subscribe({
+      next: (response) => {
+        const url = response.url ?? null;
+        if (!url) {
+          this.uiFeedback.error('La API no devolvio una URL valida para la imagen.');
+          this.uploadingField.set(null);
+          if (input) {
+            input.value = '';
+          }
+          return;
+        }
+
+        this.form.get(field.key)?.setValue(url);
+        this.form.get(field.key)?.markAsDirty();
+        this.uiFeedback.success('Imagen cargada correctamente.');
+        this.uploadingField.set(null);
+        if (input) {
+          input.value = '';
+        }
+      },
+      error: () => {
+        this.uiFeedback.error('No se pudo subir la imagen.');
+        this.uploadingField.set(null);
+        if (input) {
+          input.value = '';
+        }
+      },
+    });
+  }
+
+  clearFile(field: FieldConfig) {
+    this.form.get(field.key)?.setValue(null);
+    this.form.get(field.key)?.markAsDirty();
+  }
+
+  previewUrl(field: FieldConfig) {
+    const value = this.form.get(field.key)?.value;
+    return typeof value === 'string' && value.trim() ? value : null;
   }
 
   private resolveValue(field: FieldConfig, initialValue?: Record<string, unknown> | null) {

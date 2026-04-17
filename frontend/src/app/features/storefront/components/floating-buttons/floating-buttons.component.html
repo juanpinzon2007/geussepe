@@ -11,11 +11,14 @@
   </a>
 
   @if (chatOpen()) {
-    <section class="floating-ui__chat" aria-label="Chat de ayuda">
+    <section class="floating-ui__chat" aria-label="Chat de ayuda" role="dialog" aria-modal="false">
       <div class="floating-ui__chat-header">
-        <div>
-          <strong>{{ assistantName }}</strong>
-          <p>{{ helpText }}</p>
+        <div class="floating-ui__identity">
+          <span class="floating-ui__status-dot" aria-hidden="true"></span>
+          <div>
+            <strong>{{ assistantName }}</strong>
+            <small>{{ statusCopy() }}</small>
+          </div>
         </div>
 
         <button type="button" class="floating-ui__close" (click)="closeChat()" aria-label="Cerrar chat">
@@ -23,19 +26,58 @@
         </button>
       </div>
 
-      <div class="floating-ui__messages">
-        @for (message of messages(); track trackByMessage($index)) {
+      <section class="floating-ui__hero-copy">
+        <strong>Habla como si fuera una conversacion real.</strong>
+        <p>{{ helpText }}</p>
+      </section>
+
+      @if (messages().length === 1) {
+        <div class="floating-ui__starter-grid">
+          @for (prompt of starterPrompts(); track prompt) {
+            <button type="button" (click)="sendQuickAction(prompt)">
+              {{ prompt }}
+            </button>
+          }
+        </div>
+      }
+
+      <div class="floating-ui__messages" #messagesContainer aria-live="polite">
+        @for (message of messages(); track trackByMessage($index, message)) {
           <article
             class="floating-ui__message"
             [class.floating-ui__message--user]="message.role === 'user'"
           >
-            {{ message.text }}
+            <span class="floating-ui__message-role">
+              {{ message.role === 'assistant' ? assistantName : 'Tu' }}
+            </span>
+            <p class="floating-ui__message-text">{{ message.text }}</p>
+
+            @if (message.role === 'assistant' && message.followUps?.length) {
+              <div class="floating-ui__message-actions">
+                @for (action of message.followUps!; track action) {
+                  <button type="button" (click)="sendQuickAction(action)">
+                    {{ action }}
+                  </button>
+                }
+              </div>
+            }
+          </article>
+        }
+
+        @if (typing()) {
+          <article class="floating-ui__message floating-ui__message--typing" aria-label="Escribiendo respuesta">
+            <span class="floating-ui__message-role">{{ assistantName }}</span>
+            <div class="floating-ui__typing-dots" aria-hidden="true">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
           </article>
         }
       </div>
 
       <div class="floating-ui__quick-actions">
-        @for (action of quickActions; track action) {
+        @for (action of starterPrompts().slice(0, 4); track action) {
           <button type="button" (click)="sendQuickAction(action)">
             {{ action }}
           </button>
@@ -43,20 +85,24 @@
       </div>
 
       <div class="floating-ui__composer">
-        <input
-          type="text"
-          placeholder="Escribe tu duda sin pena"
+        <textarea
+          rows="3"
+          placeholder="Escribe tu duda. Puedes preguntar por uso, seguridad, discrecion, lubricantes, pareja, regalos o productos concretos."
           [value]="draft()"
           (input)="updateDraft($any($event.target).value)"
-          (keydown.enter)="sendDraft()"
-        />
-        <button type="button" (click)="sendDraft()">Enviar</button>
+          (keydown)="handleComposerKeydown($event)"
+        ></textarea>
+
+        <div class="floating-ui__composer-footer">
+          <span>Enter envia. Shift + Enter crea una linea nueva.</span>
+          <button type="button" (click)="sendDraft()">Enviar</button>
+        </div>
       </div>
     </section>
   }
 
   <button class="floating-ui__launcher" type="button" (click)="toggleChat()" aria-label="Abrir chat">
     <span class="material-symbols-outlined">forum</span>
-    <span>{{ chatOpen() ? 'Ocultar chat' : 'Chat atrevido' }}</span>
+    <span>{{ chatOpen() ? 'Cerrar chat' : assistantName }}</span>
   </button>
 </div>
