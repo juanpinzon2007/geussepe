@@ -76,6 +76,10 @@ import { AuthShowcaseShellComponent } from '../../shared/ui/auth-showcase-shell/
       </form>
 
       <div class="auth-form__footer">
+        <a class="auth-form__home-link" routerLink="/home">
+          <mat-icon fontSet="material-symbols-outlined">arrow_back</mat-icon>
+          Volver al inicio
+        </a>
         <a routerLink="/auth/recover">Recuperar contrasena</a>
         <a routerLink="/auth/register">Crear cuenta</a>
         <div class="auth-form__hint">
@@ -177,8 +181,18 @@ import { AuthShowcaseShellComponent } from '../../shared/ui/auth-showcase-shell/
     }
 
     .auth-form__footer a {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
       color: var(--color-primary-strong);
       font-weight: 600;
+    }
+
+    .auth-form__home-link {
+      padding: 0.55rem 0.85rem;
+      border-radius: 999px;
+      background: rgba(139, 0, 0, 0.06);
+      border: 1px solid rgba(139, 0, 0, 0.08);
     }
 
     @media (max-width: 960px) {
