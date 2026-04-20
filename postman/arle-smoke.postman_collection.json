@@ -1,0 +1,1340 @@
+{
+  "info": {
+    "name": "Arle Smoke E2E",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000/api/v1"
+    },
+    {
+      "key": "username",
+      "value": "admin"
+    },
+    {
+      "key": "password",
+      "value": "Admin123*"
+    },
+    {
+      "key": "authToken",
+      "value": ""
+    },
+    {
+      "key": "runId",
+      "value": ""
+    },
+    {
+      "key": "documentTypeId",
+      "value": ""
+    },
+    {
+      "key": "unitId",
+      "value": ""
+    },
+    {
+      "key": "currencyId",
+      "value": ""
+    },
+    {
+      "key": "supplierThirdPartyId",
+      "value": ""
+    },
+    {
+      "key": "customerThirdPartyId",
+      "value": ""
+    },
+    {
+      "key": "categoryId",
+      "value": ""
+    },
+    {
+      "key": "branchId",
+      "value": ""
+    },
+    {
+      "key": "warehouseAId",
+      "value": ""
+    },
+    {
+      "key": "warehouseBId",
+      "value": ""
+    },
+    {
+      "key": "locationA1Id",
+      "value": ""
+    },
+    {
+      "key": "paymentTermId",
+      "value": ""
+    },
+    {
+      "key": "paymentMethodId",
+      "value": ""
+    },
+    {
+      "key": "salesChannelId",
+      "value": ""
+    },
+    {
+      "key": "clientId",
+      "value": ""
+    },
+    {
+      "key": "productId",
+      "value": ""
+    },
+    {
+      "key": "purchaseOrderId",
+      "value": ""
+    },
+    {
+      "key": "receptionId",
+      "value": ""
+    },
+    {
+      "key": "saleId",
+      "value": ""
+    },
+    {
+      "key": "returnId",
+      "value": ""
+    },
+    {
+      "key": "policyId",
+      "value": ""
+    },
+    {
+      "key": "consentId",
+      "value": ""
+    },
+    {
+      "key": "externalSystemId",
+      "value": ""
+    },
+    {
+      "key": "forecastId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Base",
+      "item": [
+        {
+          "name": "Health",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/health",
+            "header": []
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\",()=>pm.response.to.have.status(200));",
+                  "pm.expect(pm.response.json().status).to.eql('ok');"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login admin",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/login",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{username}}\",\n  \"password\": \"{{password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\",()=>pm.response.to.have.status(201));",
+                  "const j=pm.response.json();pm.collectionVariables.set('authToken',j.access_token);pm.collectionVariables.set('runId',Date.now().toString());"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Fetch document type",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/masters/document-types?limit=1",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\",()=>pm.response.to.have.status(200));",
+                  "pm.collectionVariables.set('documentTypeId',(pm.response.json().value||pm.response.json())[0].id_tipo_documento_identidad);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Fetch unit",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/masters/units?limit=1",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\",()=>pm.response.to.have.status(200));",
+                  "pm.collectionVariables.set('unitId',(pm.response.json().value||pm.response.json())[0].id_unidad_medida);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Fetch currency",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/masters/currencies?limit=1",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\",()=>pm.response.to.have.status(200));",
+                  "pm.collectionVariables.set('currencyId',(pm.response.json().value||pm.response.json())[0].id_moneda);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dataset",
+      "item": [
+        {
+          "name": "Create supplier",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/masters/third-parties",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo_tercero\": \"PROVEEDOR\",\n  \"tipo_persona\": \"JURIDICA\",\n  \"id_tipo_documento_identidad\": \"{{documentTypeId}}\",\n  \"numero_documento\": \"9{{runId}}\",\n  \"razon_social\": \"Proveedor {{runId}}\",\n  \"activo\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\",()=>pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set('supplierThirdPartyId',pm.response.json().id_tercero);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create customer third party",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/masters/third-parties",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo_tercero\": \"CLIENTE\",\n  \"tipo_persona\": \"NATURAL\",\n  \"id_tipo_documento_identidad\": \"{{documentTypeId}}\",\n  \"numero_documento\": \"1{{runId}}\",\n  \"nombres\": \"Cliente\",\n  \"apellidos\": \"Pruebas\",\n  \"activo\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\",()=>pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set('customerThirdPartyId',pm.response.json().id_tercero);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create privacy policy",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/compliance/privacy-policies",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"version\": \"v{{runId}}\",\n  \"titulo\": \"Politica {{runId}}\",\n  \"fecha_inicio_vigencia\": \"2026-01-01\",\n  \"activa\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\",()=>pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set('policyId',pm.response.json().id_politica_tratamiento_datos);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create category",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/masters/categories",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigo\": \"CAT-{{runId}}\",\n  \"nombre\": \"Categoria {{runId}}\",\n  \"activo\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\",()=>pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set('categoryId',pm.response.json().id_categoria_producto);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create branch",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/inventory/branches",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigo\": \"SUC-{{runId}}\",\n  \"nombre\": \"Sucursal {{runId}}\",\n  \"activa\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\",()=>pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set('branchId',pm.response.json().id_sucursal);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create warehouse A",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/inventory/warehouses",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_sucursal\": \"{{branchId}}\",\n  \"codigo\": \"BGA-{{runId}}\",\n  \"nombre\": \"Bodega A {{runId}}\",\n  \"tipo_bodega\": \"PRINCIPAL\",\n  \"permite_ventas\": true,\n  \"activa\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\",()=>pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set('warehouseAId',pm.response.json().id_bodega);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create warehouse B",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/inventory/warehouses",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_sucursal\": \"{{branchId}}\",\n  \"codigo\": \"BGB-{{runId}}\",\n  \"nombre\": \"Bodega B {{runId}}\",\n  \"tipo_bodega\": \"SECUNDARIA\",\n  \"activa\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\",()=>pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set('warehouseBId',pm.response.json().id_bodega);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create location A1",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/inventory/locations",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_bodega\": \"{{warehouseAId}}\",\n  \"codigo\": \"UBA1-{{runId}}\",\n  \"activa\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\",()=>pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set('locationA1Id',pm.response.json().id_ubicacion);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create payment term",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/purchases/payment-terms",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigo\": \"CP-{{runId}}\",\n  \"nombre\": \"Contado {{runId}}\",\n  \"dias_credito\": 0,\n  \"activa\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\",()=>pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set('paymentTermId',pm.response.json().id_condicion_pago);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create payment method",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/sales/payment-methods",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigo\": \"PAY-{{runId}}\",\n  \"nombre\": \"Pago {{runId}}\",\n  \"tipo_metodo\": \"EFECTIVO\",\n  \"activo\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\",()=>pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set('paymentMethodId',pm.response.json().id_metodo_pago);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create sales channel",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/masters/sales-channels",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigo\": \"CH-{{runId}}\",\n  \"nombre\": \"Canal {{runId}}\",\n  \"tipo_canal\": \"TIENDA\",\n  \"activo\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\",()=>pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set('salesChannelId',pm.response.json().id_canal_venta);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create client",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/sales/clients",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_tercero\": \"{{customerThirdPartyId}}\",\n  \"fecha_nacimiento\": \"1990-01-01\",\n  \"canal_registro\": \"WEB\",\n  \"activo\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\",()=>pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set('clientId',pm.response.json().id_cliente);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create product",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/masters/products",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sku\": \"SKU-{{runId}}\",\n  \"nombre\": \"Producto {{runId}}\",\n  \"id_categoria_producto\": \"{{categoryId}}\",\n  \"id_unidad_medida_base\": \"{{unitId}}\",\n  \"tipo_producto\": \"INVENTARIO\",\n  \"es_inventariable\": true,\n  \"requiere_control_mayoria_edad\": true,\n  \"es_restringido\": true,\n  \"stock_minimo\": 1,\n  \"stock_maximo\": 50,\n  \"activo\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\",()=>pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set('productId',pm.response.json().id_producto);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Flows",
+      "item": [
+        {
+          "name": "Manual entry",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/inventory/manual-documents",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo_documento\": \"ENTRADA_AJUSTE\",\n  \"movement_code\": \"ENTRADA_MANUAL\",\n  \"id_bodega\": \"{{warehouseAId}}\",\n  \"motivo\": \"Carga inicial\",\n  \"apply_now\": true,\n  \"lines\": [{\n    \"id_producto\": \"{{productId}}\",\n    \"id_ubicacion\": \"{{locationA1Id}}\",\n    \"cantidad\": 12,\n    \"costo_unitario\": 25,\n    \"detalle\": \"Carga inicial\"\n  }]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\",()=>pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create purchase order",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/purchases/orders",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_proveedor\": \"{{supplierThirdPartyId}}\",\n  \"id_bodega_destino\": \"{{warehouseAId}}\",\n  \"id_condicion_pago\": \"{{paymentTermId}}\",\n  \"id_moneda\": \"{{currencyId}}\",\n  \"detalles\": [{\n    \"id_producto\": \"{{productId}}\",\n    \"cantidad\": 4,\n    \"costo_unitario\": 30,\n    \"porcentaje_impuesto\": 19\n  }]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\",()=>pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set('purchaseOrderId',pm.response.json().id_orden_compra);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Approve purchase order",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/purchases/orders/{{purchaseOrderId}}/approve",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\",()=>pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create reception",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/purchases/receptions",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_orden_compra\": \"{{purchaseOrderId}}\",\n  \"id_proveedor\": \"{{supplierThirdPartyId}}\",\n  \"id_bodega\": \"{{warehouseAId}}\",\n  \"detalles\": [{\n    \"id_producto\": \"{{productId}}\",\n    \"id_ubicacion\": \"{{locationA1Id}}\",\n    \"cantidad_recibida\": 4,\n    \"costo_unitario\": 30\n  }]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\",()=>pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set('receptionId',pm.response.json().id_recepcion_compra);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Apply reception",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/purchases/receptions/{{receptionId}}/apply",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\",()=>pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create sale",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/sales/orders",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo_venta\": \"POS\",\n  \"id_cliente\": \"{{clientId}}\",\n  \"id_bodega\": \"{{warehouseAId}}\",\n  \"id_canal_venta\": \"{{salesChannelId}}\",\n  \"detalles\": [{\n    \"id_producto\": \"{{productId}}\",\n    \"cantidad\": 1,\n    \"precio_unitario\": 60,\n    \"porcentaje_impuesto\": 19\n  }]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\",()=>pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set('saleId',pm.response.json().id_venta);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Confirm sale",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/sales/orders/{{saleId}}/confirm",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"control_mayoria_edad_realizado\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\",()=>pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create return",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/sales/returns",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_venta\": \"{{saleId}}\",\n  \"id_cliente\": \"{{clientId}}\",\n  \"id_bodega_recepcion\": \"{{warehouseAId}}\",\n  \"tipo_devolucion\": \"GARANTIA\",\n  \"motivo\": \"Devolucion smoke\",\n  \"detalles\": [{\n    \"id_producto\": \"{{productId}}\",\n    \"cantidad\": 1,\n    \"estado_producto_recibido\": \"NUEVO\",\n    \"decision_final\": \"REINTEGRA_STOCK\"\n  }]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\",()=>pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set('returnId',pm.response.json().id_devolucion_cliente);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Resolve return",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/sales/returns/{{returnId}}/resolve",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"approved\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\",()=>pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create consent",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/compliance/consents",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_tercero\": \"{{customerThirdPartyId}}\",\n  \"id_politica_tratamiento_datos\": \"{{policyId}}\",\n  \"canal\": \"WEB\",\n  \"finalidad\": \"Consentimiento smoke\",\n  \"autorizada\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\",()=>pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set('consentId',pm.response.json().id_autorizacion_datos_personales);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create external system",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/integrations/systems",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigo\": \"SYS-{{runId}}\",\n  \"nombre\": \"Sistema {{runId}}\",\n  \"tipo_sistema\": \"ECOMMERCE\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\",()=>pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set('externalSystemId',pm.response.json().id_sistema_externo);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Forecast demand",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/ai/forecast-demand",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_producto\": \"{{productId}}\",\n  \"id_bodega\": \"{{warehouseAId}}\",\n  \"horizonte_dias\": 30\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\",()=>pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set('forecastId',pm.response.json().id_pronostico_demanda);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Analytics stock alerts",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/analytics/stock-alerts",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\",()=>pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Inventory report",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/reports/inventory",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\",()=>pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Logout admin",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/logout",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\",()=>pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

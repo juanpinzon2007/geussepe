@@ -1,0 +1,8 @@
+<svg width="640" height="760" viewBox="0 0 640 760" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="640" height="760" rx="56" fill="#F7EEF5"/>
+  <ellipse cx="320" cy="612" rx="170" ry="34" fill="#E1D4E0"/>
+  <path d="M364 154C419.228 154 464 198.772 464 254C464 309.228 419.228 354 364 354H354V452C354 502.81 312.81 544 262 544C211.19 544 170 502.81 170 452C170 401.19 211.19 360 262 360H278C304.51 360 326 338.51 326 312V254C326 198.772 370.772 154 426 154H364Z" fill="#1A1A1A"/>
+  <circle cx="426" cy="248" r="78" fill="#2A2A2A"/>
+  <rect x="226" y="512" width="148" height="42" rx="21" fill="#D63384"/>
+  <text x="320" y="660" fill="#612C4E" font-family="Poppins, sans-serif" font-size="42" font-weight="700" text-anchor="middle">Plug night</text>
+</svg>

@@ -1,0 +1,26 @@
+FROM node:22-alpine AS builder
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm ci
+
+COPY . .
+RUN rm -rf dist tsconfig.build.tsbuildinfo && npm run build
+
+FROM node:22-alpine AS runner
+WORKDIR /app
+
+ENV NODE_ENV=production
+
+COPY package*.json ./
+RUN npm ci --omit=dev
+RUN mkdir -p /app/uploads/products
+
+COPY uploads/catalog /app/uploads/catalog
+
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/base.sql ./base.sql
+
+EXPOSE 3000
+
+CMD ["node", "dist/main.js"]

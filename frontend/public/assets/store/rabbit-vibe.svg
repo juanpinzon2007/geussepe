@@ -1,0 +1,10 @@
+<svg width="640" height="760" viewBox="0 0 640 760" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="640" height="760" rx="56" fill="#F7DCE8"/>
+  <ellipse cx="320" cy="610" rx="170" ry="34" fill="#E7C9D8"/>
+  <rect x="234" y="168" width="172" height="392" rx="86" fill="#F4B1CC"/>
+  <rect x="252" y="78" width="56" height="180" rx="28" transform="rotate(-8 252 78)" fill="#F4B1CC"/>
+  <rect x="334" y="66" width="56" height="196" rx="28" transform="rotate(9 334 66)" fill="#F8C7DA"/>
+  <circle cx="319" cy="355" r="56" fill="#FFFFFF" fill-opacity="0.34"/>
+  <path d="M223 540C223 505.758 250.758 478 285 478H355C389.242 478 417 505.758 417 540V562H223V540Z" fill="#D63384"/>
+  <text x="320" y="660" fill="#7B2C56" font-family="Poppins, sans-serif" font-size="42" font-weight="700" text-anchor="middle">Conejo premium</text>
+</svg>
