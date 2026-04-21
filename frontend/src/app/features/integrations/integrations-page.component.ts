@@ -1,23 +1,20 @@
 import { CommonModule, JsonPipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
-import { MatButtonModule } from '@angular/material/button';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
+import { timer } from 'rxjs';
 import { ApiService } from '../../core/services/api.service';
 import { PageHeaderComponent } from '../../shared/ui/page-header.component';
 
 @Component({
   selector: 'app-integrations-page',
-  imports: [CommonModule, JsonPipe, MatButtonModule, PageHeaderComponent],
+  imports: [CommonModule, JsonPipe, PageHeaderComponent],
   template: `
     <section class="page-grid">
       <app-page-header
         title="Integraciones empresariales"
         subtitle="Consulta sistemas externos y sincronizaciones registradas por el backend."
         eyebrow="Integraciones"
-      >
-        <button mat-flat-button color="primary" type="button" (click)="loadAll()">
-          Actualizar integraciones
-        </button>
-      </app-page-header>
+      />
 
       <section class="workspace-grid">
         <article class="surface-card card">
@@ -48,12 +45,15 @@ import { PageHeaderComponent } from '../../shared/ui/page-header.component';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class IntegrationsPageComponent {
+  private readonly destroyRef = inject(DestroyRef);
   private readonly api = inject(ApiService);
   readonly systems = signal<unknown>(null);
   readonly syncs = signal<unknown>(null);
 
   constructor() {
-    this.loadAll();
+    timer(0, 20000)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.loadAll());
   }
 
   loadAll() {
