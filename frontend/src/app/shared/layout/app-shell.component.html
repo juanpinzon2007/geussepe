@@ -6,11 +6,11 @@
     (closedStart)="mobileOpen.set(false)"
   >
     <section class="brand">
-      <span class="badge">El Desquite 😈</span>
-      <h2>Operacion sensual</h2>
+      <span class="badge">El Desquite</span>
+      <h2>Salon privado</h2>
       <p class="muted">
-        Catalogo, ventas, pedidos, cumplimiento y analitica con el mismo lenguaje visual
-        del storefront.
+        Catalogo, ventas, pedidos y clientes con una cabina visual mas clara, elegante y facil
+        de leer.
       </p>
     </section>
 
@@ -40,6 +40,14 @@
       >
         <mat-icon fontSet="material-symbols-outlined">menu</mat-icon>
       </button>
+
+      <div class="shell__brandline">
+        <span class="shell__brandline-mark"></span>
+        <div>
+          <strong>El Desquite</strong>
+          <span>Cabina administrativa</span>
+        </div>
+      </div>
 
       <div class="shell__breadcrumbs">
         @for (crumb of breadcrumbService.breadcrumbs(); track crumb.url; let last = $last) {

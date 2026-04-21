@@ -1,7 +1,7 @@
 <section class="home">
   <div class="home__canvas">
     <app-header
-      [brandName]="home()?.brand?.name ?? 'El Desquite 😈'"
+      [brandName]="home()?.brand?.name ?? 'El Desquite'"
       [cartCount]="cartCount()"
       [isAuthenticated]="isAuthenticated()"
       (menuClick)="toggleMenu()"
@@ -45,15 +45,30 @@
         <section class="home__shop" id="shop-grid" aria-labelledby="shop-grid-title">
           <div class="home__shop-header">
             <div>
-              <span class="home__eyebrow">Vitrina premium</span>
-              <h2 id="shop-grid-title">Seleccion curada</h2>
+              <span class="home__eyebrow">Catalogo completo</span>
+              <h2 id="shop-grid-title">
+                {{ activeCollection()?.title ?? 'Todo el catalogo erotico' }}
+              </h2>
+              <p>
+                {{
+                  activeCollection()?.subtitle ??
+                    'Todos los productos de la tienda listos para filtrar, agregar al carrito y comprar.'
+                }}
+              </p>
             </div>
 
-            @if (selectedCollectionId()) {
-              <button class="home__filter-reset" type="button" (click)="clearCollectionFilter()">
-                Ver todo
-              </button>
-            }
+            <div class="home__shop-actions">
+              <article class="home__shop-count">
+                <strong>{{ filteredProductCount() }}</strong>
+                <span>productos visibles</span>
+              </article>
+
+              @if (selectedCollectionId()) {
+                <button class="home__filter-reset" type="button" (click)="clearCollectionFilter()">
+                  Ver todo
+                </button>
+              }
+            </div>
           </div>
 
           <div class="home__product-grid">
@@ -205,7 +220,11 @@
 
         <label class="checkout-form__full">
           <span>Notas del pedido</span>
-          <textarea rows="3" formControlName="observaciones" placeholder="Instrucciones, horario o detalles de entrega"></textarea>
+          <textarea
+            rows="3"
+            formControlName="observaciones"
+            placeholder="Instrucciones, horario o detalles de entrega"
+          ></textarea>
         </label>
 
         <div class="checkout-form__summary">
@@ -228,8 +247,10 @@
     <app-floating-buttons
       [promoLabel]="home()!.promo.label"
       [promoUrl]="home()!.promo.url"
-      [helpText]="home()!.support.help_text"
-      [whatsappUrl]="home()!.support.whatsapp_url"
+      [assistantName]="'Arlepicaron'"
+      [helpText]="'Escribeme libremente y te ayudo con dudas sexuales, recomendaciones de productos, seguridad, limpieza, discrecion y compras dentro de la tienda.'"
+      [catalogSections]="catalogSections"
+      [technicalAttributes]="technicalAttributes"
     />
   }
 </section>

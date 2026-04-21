@@ -14,6 +14,7 @@ ENV NODE_ENV=production
 
 COPY package*.json ./
 RUN npm ci --omit=dev
+RUN mkdir -p /app/uploads
 
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/base.sql ./base.sql

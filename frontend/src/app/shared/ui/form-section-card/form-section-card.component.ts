@@ -37,7 +37,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
       position: absolute;
       inset: 0 0 auto 0;
       height: 4px;
-      background: linear-gradient(90deg, var(--color-primary), var(--color-lavender));
+      background: linear-gradient(90deg, var(--color-primary), var(--color-primary-strong));
     }
 
     .form-card__header {
@@ -52,7 +52,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
       align-items: center;
       padding: 0.34rem 0.7rem;
       border-radius: 999px;
-      background: rgba(247, 220, 232, 0.82);
+      background: rgba(139, 0, 0, 0.08);
       color: var(--color-primary-strong);
       font-size: 0.72rem;
       font-weight: 700;
@@ -68,9 +68,11 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
     .form-card__copy h2 {
       margin: 0;
       color: var(--color-ink);
-      font-family: var(--font-display);
-      font-size: 1.3rem;
-      letter-spacing: -0.04em;
+      font-family: var(--font-sensual);
+      font-size: 2rem;
+      font-weight: 700;
+      line-height: 0.96;
+      letter-spacing: -0.03em;
     }
 
     .form-card__copy p {

@@ -28,15 +28,17 @@ import { MatIconModule } from '@angular/material/icon';
       padding: 1.5rem;
       align-items: flex-start;
       background:
-        radial-gradient(circle at top right, rgba(201, 182, 228, 0.18), transparent 26%),
-        linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(255, 248, 251, 0.96));
+        radial-gradient(circle at top right, rgba(255, 74, 74, 0.16), transparent 26%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(255, 245, 245, 0.96));
     }
 
     h1 {
       margin: 0.75rem 0 0.45rem;
-      font-family: var(--font-display);
-      font-size: clamp(1.7rem, 2vw, 2.35rem);
-      letter-spacing: -0.06em;
+      font-family: var(--font-sensual);
+      font-size: clamp(2.3rem, 4vw, 3.2rem);
+      font-weight: 700;
+      letter-spacing: -0.05em;
+      line-height: 0.94;
     }
 
     p {

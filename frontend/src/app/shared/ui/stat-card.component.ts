@@ -28,9 +28,11 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
     }
 
     strong {
-      font-family: var(--font-display);
-      font-size: clamp(1.6rem, 2vw, 2.35rem);
-      letter-spacing: -0.05em;
+      font-family: var(--font-sensual);
+      font-size: clamp(2rem, 3vw, 3rem);
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      line-height: 0.95;
     }
 
     .helper {

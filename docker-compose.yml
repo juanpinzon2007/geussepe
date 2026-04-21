@@ -34,6 +34,8 @@ services:
       DEFAULT_ADMIN_PASSWORD: Admin123*
     ports:
       - "3000:3000"
+    volumes:
+      - ./uploads:/app/uploads
 
   web:
     build:

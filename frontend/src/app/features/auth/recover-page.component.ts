@@ -20,16 +20,13 @@ import { AuthShowcaseShellComponent } from '../../shared/ui/auth-showcase-shell/
   ],
   template: `
     <app-auth-showcase-shell
-      eyebrow="El Desquite 😈"
-      title="Recupera tu acceso sin perder el estilo"
-      subtitle="El flujo de recuperacion mantiene la misma estetica premium, clara y comercial del storefront."
+      eyebrow="Recuperacion"
+      title="Recuperar acceso"
+      subtitle="Solicita tu recuperacion con la misma experiencia elegante del resto de la tienda."
       panelTitle="Recuperar contrasena"
-      panelSubtitle="Solicita el token para volver a entrar al panel con seguridad."
-      [bullets]="[
-        'Flujo mas limpio para soporte interno',
-        'Mismo estilo de campos y acciones',
-        'Consistencia visual con login y storefront'
-      ]"
+      panelSubtitle="Escribe tu usuario o correo y te enviamos la ruta para volver a entrar."
+      [heroVisible]="false"
+      [centered]="true"
       [compact]="true"
     >
       <form [formGroup]="form" (ngSubmit)="submit()" class="premium-form-grid recover-form">
@@ -45,13 +42,20 @@ import { AuthShowcaseShellComponent } from '../../shared/ui/auth-showcase-shell/
 
       <div class="recover-form__footer">
         <a routerLink="/auth/login">Volver al login</a>
+        <a routerLink="/auth/register">Crear cuenta</a>
       </div>
     </app-auth-showcase-shell>
   `,
   styles: `
     :host {
-      display: block;
+      display: grid;
+      align-items: center;
+      min-height: 100vh;
       padding: 1.2rem;
+      background:
+        radial-gradient(circle at top left, rgba(255, 84, 84, 0.2), transparent 22%),
+        radial-gradient(circle at bottom right, rgba(139, 0, 0, 0.14), transparent 26%),
+        linear-gradient(180deg, #060202, #190506 46%, #280709);
     }
 
     .recover-form__submit {
@@ -59,11 +63,14 @@ import { AuthShowcaseShellComponent } from '../../shared/ui/auth-showcase-shell/
     }
 
     .recover-form__footer {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
       margin-top: 1rem;
     }
 
     .recover-form__footer a {
-      color: #7be3ff;
+      color: var(--color-primary-strong);
       font-weight: 600;
     }
   `,

@@ -7,6 +7,11 @@ export const AUTH_ROUTES: Routes = [
       import('./login-page.component').then((module) => module.LoginPageComponent),
   },
   {
+    path: 'register',
+    loadComponent: () =>
+      import('./register-page.component').then((module) => module.RegisterPageComponent),
+  },
+  {
     path: 'recover',
     loadComponent: () =>
       import('./recover-page.component').then((module) => module.RecoverPageComponent),
