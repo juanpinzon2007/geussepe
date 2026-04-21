@@ -10,7 +10,7 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { environment } from '../../../../../environments/environment';
+import { ApiService } from '../../../../core/services/api.service';
 import { SessionStore } from '../../../../core/services/session.store';
 import { CartStore } from '../../data-access/cart.store';
 import {
@@ -50,9 +50,9 @@ export class HomePageComponent {
   private readonly cartStore = inject(CartStore);
   private readonly sessionStore = inject(SessionStore);
   private readonly router = inject(Router);
+  private readonly api = inject(ApiService);
   private readonly formBuilder = inject(FormBuilder);
   private readonly destroyRef = inject(DestroyRef);
-  private readonly apiOrigin = this.resolveApiOrigin();
 
   readonly home = signal<StorefrontHomeResponse | null>(null);
   readonly loading = signal(true);
@@ -246,23 +246,7 @@ export class HomePageComponent {
   }
 
   resolveProductImage(product: StorefrontProduct) {
-    if (!product.image_url) {
-      return null;
-    }
-
-    if (
-      product.image_url.startsWith('http://') ||
-      product.image_url.startsWith('https://') ||
-      product.image_url.startsWith('data:')
-    ) {
-      return product.image_url;
-    }
-
-    if (product.image_url.startsWith('/uploads/')) {
-      return `${this.apiOrigin}${product.image_url}`;
-    }
-
-    return product.image_url;
+    return this.api.resolveAssetUrl(product.image_url);
   }
 
   onProductImageError(event: Event, product: StorefrontProduct) {
@@ -273,10 +257,10 @@ export class HomePageComponent {
 
     const originalPath = product.image_url ?? '';
     const currentSrc = img.getAttribute('src') ?? '';
-    const apiSrc = originalPath.startsWith('/uploads/') ? `${this.apiOrigin}${originalPath}` : '';
+    const resolvedPath = this.api.resolveAssetUrl(originalPath);
 
-    if (apiSrc && currentSrc !== apiSrc) {
-      img.src = apiSrc;
+    if (resolvedPath && currentSrc !== resolvedPath) {
+      img.src = resolvedPath;
       return;
     }
 
@@ -287,13 +271,5 @@ export class HomePageComponent {
 
     img.onerror = null;
     img.src = '/assets/store/catalog/obsidian-glow.svg';
-  }
-
-  private resolveApiOrigin() {
-    try {
-      return new URL(environment.apiBaseUrl, window.location.origin).origin;
-    } catch {
-      return window.location.origin;
-    }
   }
 }

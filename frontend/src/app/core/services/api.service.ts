@@ -8,7 +8,8 @@ import { ApiQueryParams } from '../models/app.models';
 export class ApiService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = environment.apiBaseUrl;
-  private readonly assetOrigin = this.resolveAssetOrigin();
+  private readonly apiOrigin = this.resolveApiOrigin();
+  private readonly appOrigin = this.resolveAppOrigin();
 
   get<T>(path: string, query?: ApiQueryParams) {
     return this.http
@@ -44,37 +45,52 @@ export class ApiService {
       return null;
     }
 
+    if (trimmedValue.startsWith('/uploads/')) {
+      return `${this.apiOrigin}${trimmedValue}`;
+    }
+
+    if (trimmedValue.startsWith('/assets/')) {
+      return `${this.appOrigin}${trimmedValue}`;
+    }
+
     if (trimmedValue.startsWith('/')) {
-      return `${this.assetOrigin}${trimmedValue}`;
+      return `${this.appOrigin}${trimmedValue}`;
     }
 
     if (trimmedValue.startsWith('uploads/')) {
-      return `${this.assetOrigin}/${trimmedValue}`;
+      return `${this.apiOrigin}/${trimmedValue}`;
     }
 
     try {
       const parsedUrl = new URL(trimmedValue);
       if (parsedUrl.pathname.startsWith('/uploads/')) {
-        return `${this.assetOrigin}${parsedUrl.pathname}${parsedUrl.search}${parsedUrl.hash}`;
+        return `${this.apiOrigin}${parsedUrl.pathname}${parsedUrl.search}${parsedUrl.hash}`;
+      }
+
+      if (parsedUrl.pathname.startsWith('/assets/')) {
+        return `${this.appOrigin}${parsedUrl.pathname}${parsedUrl.search}${parsedUrl.hash}`;
       }
 
       return parsedUrl.toString();
     } catch {
-      return `${this.assetOrigin}/${trimmedValue.replace(/^\/+/, '')}`;
+      return `${this.appOrigin}/${trimmedValue.replace(/^\/+/, '')}`;
     }
   }
 
-  private resolveAssetOrigin() {
+  private resolveApiOrigin() {
     try {
-      const runtimeOrigin =
-        typeof window !== 'undefined' && window.location?.origin
-          ? window.location.origin
-          : 'http://localhost';
-
-      return new URL(this.baseUrl, runtimeOrigin).origin;
+      return new URL(this.baseUrl, this.resolveAppOrigin()).origin;
     } catch {
       return 'http://localhost';
     }
+  }
+
+  private resolveAppOrigin() {
+    if (typeof window !== 'undefined' && window.location?.origin) {
+      return window.location.origin;
+    }
+
+    return 'http://localhost';
   }
 
   private toHttpParams(query?: ApiQueryParams) {

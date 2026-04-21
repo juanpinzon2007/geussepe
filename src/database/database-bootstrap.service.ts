@@ -6,6 +6,7 @@ import bcrypt from "bcryptjs";
 import { DatabaseService } from "./database.service";
 import {
   STOREFRONT_PRICE_START,
+  STOREFRONT_PRODUCT_IMAGE_BY_SKU,
   STOREFRONT_SEED_CATEGORIES,
 } from "../modules/storefront/storefront-catalog.seed";
 
@@ -429,6 +430,11 @@ export class DatabaseBootstrapService implements OnModuleInit {
   }
 
   private resolveSeedImageUrl(sku: string, fallbackImageUrl: string) {
+    const mappedImageUrl = STOREFRONT_PRODUCT_IMAGE_BY_SKU[sku];
+    if (mappedImageUrl) {
+      return mappedImageUrl;
+    }
+
     if (sku === "BDSMFETICHE-001") {
       return "/uploads/products/bdsmfetiche-001.png";
     }

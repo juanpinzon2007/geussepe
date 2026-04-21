@@ -25,6 +25,43 @@ export type StorefrontSeedCategory = {
 
 export const STOREFRONT_PRICE_START = "2026-01-01";
 
+export const STOREFRONT_PRODUCT_IMAGE_BY_SKU: Record<string, string> = {
+  "PRODUCTOSMAS-001": "/assets/store/products/productosmas-001.webp",
+  "PRODUCTOSMAS-002": "/assets/store/products/productosmas-002.webp",
+  "PRODUCTOSMAS-003": "/assets/store/products/productosmas-003.webp",
+  "PRODUCTOSMAS-004": "/assets/store/products/productosmas-004.webp",
+  "PRODUCTOSMAS-005": "/assets/store/products/productosmas-005.webp",
+  "PRODUCTOSMAS-006": "/assets/store/products/productosmas-006.webp",
+  "PRODUCTOSFEM-001": "/assets/store/products/productosfem-001.webp",
+  "PRODUCTOSFEM-002": "/assets/store/products/productosfem-002.webp",
+  "PRODUCTOSFEM-003": "/assets/store/products/productosfem-003.webp",
+  "PRODUCTOSFEM-004": "/assets/store/products/productosfem-004.webp",
+  "PRODUCTOSFEM-005": "/assets/store/products/productosfem-005.webp",
+  "HIGIENEINTIM-001": "/assets/store/products/higieneintim-001.webp",
+  "HIGIENEINTIM-002": "/assets/store/products/higieneintim-002.webp",
+  "HIGIENEINTIM-003": "/assets/store/products/higieneintim-003.webp",
+  "HIGIENEINTIM-004": "/assets/store/products/higieneintim-004.webp",
+  "HIGIENEINTIM-005": "/assets/store/products/higieneintim-005.webp",
+  "KITSCOMBOS-001": "/assets/store/products/kitscombos-001.webp",
+  "KITSCOMBOS-002": "/assets/store/products/kitscombos-002.webp",
+  "KITSCOMBOS-003": "/assets/store/products/kitscombos-003.webp",
+  "KITSCOMBOS-004": "/assets/store/products/kitscombos-004.webp",
+  "ACCESORIOSAL-001": "/assets/store/products/accesoriosal-001.webp",
+  "ACCESORIOSAL-002": "/assets/store/products/accesoriosal-002.webp",
+  "ACCESORIOSAL-003": "/assets/store/products/accesoriosal-003.webp",
+  "ACCESORIOSAL-004": "/assets/store/products/accesoriosal-004.webp",
+  "ACCESORIOSAL-005": "/assets/store/products/accesoriosal-005.webp",
+  "COSMETICAERO-001": "/assets/store/products/cosmeticaero-001.webp",
+  "COSMETICAERO-002": "/assets/store/products/cosmeticaero-002.webp",
+  "COSMETICAERO-003": "/assets/store/products/cosmeticaero-003.webp",
+  "COSMETICAERO-004": "/assets/store/products/cosmeticaero-004.webp",
+  "COSMETICAERO-005": "/assets/store/products/cosmeticaero-005.webp",
+  "SMARTTOYS-001": "/assets/store/products/smarttoys-001.webp",
+  "SMARTTOYS-002": "/assets/store/products/smarttoys-002.webp",
+  "SMARTTOYS-003": "/assets/store/products/smarttoys-003.webp",
+  "SMARTTOYS-004": "/assets/store/products/smarttoys-004.webp",
+};
+
 export const STOREFRONT_SEED_CATEGORIES: StorefrontSeedCategory[] = [
   {
     code: "JUGUETES-SEXUALES",

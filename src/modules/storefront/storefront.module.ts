@@ -3,10 +3,11 @@ import { ApiOperation, ApiTags } from "@nestjs/swagger";
 import { DatabaseModule } from "../../database/database.module";
 import { DatabaseService } from "../../database/database.service";
 import { SalesModule, SalesService } from "../sales/sales.module";
-import { STOREFRONT_SEED_CATEGORIES } from "./storefront-catalog.seed";
+import { STOREFRONT_PRODUCT_IMAGE_BY_SKU, STOREFRONT_SEED_CATEGORIES } from "./storefront-catalog.seed";
 
 type StorefrontProductRow = {
   id_producto: string;
+  sku: string;
   nombre: string;
   nombre_corto: string | null;
   descripcion: string | null;
@@ -75,6 +76,7 @@ export class StorefrontService {
         )
         SELECT
           p.id_producto,
+          p.sku,
           p.nombre,
           p.nombre_corto,
           p.descripcion,
@@ -221,7 +223,10 @@ export class StorefrontService {
   }
 
   private mapProduct(row: StorefrontProductRow) {
-    const imageUrl = row.url_imagen_principal ?? this.resolveFallbackImage(row);
+    const imageUrl =
+      STOREFRONT_PRODUCT_IMAGE_BY_SKU[row.sku] ??
+      row.url_imagen_principal ??
+      this.resolveFallbackImage(row);
     return {
       id: row.id_producto,
       title: row.nombre_corto ?? row.nombre,
