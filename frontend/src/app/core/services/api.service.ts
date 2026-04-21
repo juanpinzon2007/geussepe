@@ -8,6 +8,7 @@ import { ApiQueryParams } from '../models/app.models';
 export class ApiService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = environment.apiBaseUrl;
+  private readonly assetOrigin = this.resolveAssetOrigin();
 
   get<T>(path: string, query?: ApiQueryParams) {
     return this.http
@@ -31,6 +32,49 @@ export class ApiService {
     return this.http
       .patch<T>(`${this.baseUrl}${path}`, payload)
       .pipe(timeout(15000));
+  }
+
+  resolveAssetUrl(value: string | null | undefined) {
+    if (typeof value !== 'string') {
+      return null;
+    }
+
+    const trimmedValue = value.trim();
+    if (!trimmedValue) {
+      return null;
+    }
+
+    if (trimmedValue.startsWith('/')) {
+      return `${this.assetOrigin}${trimmedValue}`;
+    }
+
+    if (trimmedValue.startsWith('uploads/')) {
+      return `${this.assetOrigin}/${trimmedValue}`;
+    }
+
+    try {
+      const parsedUrl = new URL(trimmedValue);
+      if (parsedUrl.pathname.startsWith('/uploads/')) {
+        return `${this.assetOrigin}${parsedUrl.pathname}${parsedUrl.search}${parsedUrl.hash}`;
+      }
+
+      return parsedUrl.toString();
+    } catch {
+      return `${this.assetOrigin}/${trimmedValue.replace(/^\/+/, '')}`;
+    }
+  }
+
+  private resolveAssetOrigin() {
+    try {
+      const runtimeOrigin =
+        typeof window !== 'undefined' && window.location?.origin
+          ? window.location.origin
+          : 'http://localhost';
+
+      return new URL(this.baseUrl, runtimeOrigin).origin;
+    } catch {
+      return 'http://localhost';
+    }
   }
 
   private toHttpParams(query?: ApiQueryParams) {
