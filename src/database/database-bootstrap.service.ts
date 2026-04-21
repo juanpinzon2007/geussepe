@@ -510,7 +510,6 @@ export class DatabaseBootstrapService implements OnModuleInit {
 
     return fallbackImageUrl;
   }
-
   private buildProductDescription(item: string, categoryName: string, categoryDescription: string) {
     return `${item} dentro de ${categoryName.toLowerCase()}. ${categoryDescription}`;
   }
