@@ -76,7 +76,11 @@
               <article class="product-card">
                 <div class="product-card__media">
                   @if (product.image_url) {
-                    <img [src]="product.image_url" [alt]="product.title" />
+                    <img
+                      [src]="resolveProductImage(product)"
+                      [alt]="product.title"
+                      (error)="onProductImageError($event, product)"
+                    />
                   } @else {
                     <div class="product-card__placeholder" aria-hidden="true">
                       <span>{{ product.title.slice(0, 1) }}</span>

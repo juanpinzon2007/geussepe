@@ -357,7 +357,7 @@ export class DatabaseBootstrapService implements OnModuleInit {
                 es_kit = EXCLUDED.es_kit,
                 temperatura_minima = EXCLUDED.temperatura_minima,
                 temperatura_maxima = EXCLUDED.temperatura_maxima,
-                url_imagen_principal = EXCLUDED.url_imagen_principal,
+                url_imagen_principal = COALESCE(maestros.productos.url_imagen_principal, EXCLUDED.url_imagen_principal),
                 activo = true,
                 observaciones = EXCLUDED.observaciones
           RETURNING id_producto

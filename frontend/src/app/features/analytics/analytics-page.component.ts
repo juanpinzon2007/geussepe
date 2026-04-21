@@ -1,24 +1,21 @@
 import { CommonModule, JsonPipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
-import { MatButtonModule } from '@angular/material/button';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
+import { timer } from 'rxjs';
 import { ApiService } from '../../core/services/api.service';
 import { PageHeaderComponent } from '../../shared/ui/page-header.component';
 import { StatCardComponent } from '../../shared/ui/stat-card.component';
 
 @Component({
   selector: 'app-analytics-page',
-  imports: [CommonModule, JsonPipe, MatButtonModule, PageHeaderComponent, StatCardComponent],
+  imports: [CommonModule, JsonPipe, PageHeaderComponent, StatCardComponent],
   template: `
     <section class="page-grid">
       <app-page-header
         title="Analítica y alertas"
         subtitle="KPI operativos, rotación y alertas de stock expuestos por el backend."
         eyebrow="Analítica"
-      >
-        <button mat-flat-button color="primary" type="button" (click)="loadAll()">
-          Actualizar analítica
-        </button>
-      </app-page-header>
+      />
 
       <section class="stats-grid">
         <app-stat-card label="Ventas" [value]="dashboard()?.sales?.ventas ?? 0" />
@@ -50,12 +47,15 @@ import { StatCardComponent } from '../../shared/ui/stat-card.component';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AnalyticsPageComponent {
+  private readonly destroyRef = inject(DestroyRef);
   private readonly api = inject(ApiService);
   readonly dashboard = signal<any | null>(null);
   readonly rotation = signal<any[]>([]);
 
   constructor() {
-    this.loadAll();
+    timer(0, 20000)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.loadAll());
   }
 
   loadAll() {

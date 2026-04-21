@@ -655,17 +655,35 @@ export class MastersService {
   private resolvePublicUrl(request: FastifyRequest, publicPath: string) {
     const hostHeader = request.headers["x-forwarded-host"] ?? request.headers.host;
     const protocolHeader = request.headers["x-forwarded-proto"];
+    const portHeader = request.headers["x-forwarded-port"];
     const host = Array.isArray(hostHeader) ? hostHeader[0] : hostHeader;
     const protocol =
       (Array.isArray(protocolHeader) ? protocolHeader[0] : protocolHeader) ??
       request.protocol ??
       "http";
+    const forwardedPort = Array.isArray(portHeader) ? portHeader[0] : portHeader;
 
     if (!host) {
       return publicPath;
     }
 
-    return `${protocol}://${host}${publicPath}`;
+    const hostHasPort = this.hostIncludesPort(host);
+    const defaultPort = protocol === "https" ? "443" : "80";
+    const normalizedHost =
+      !hostHasPort && forwardedPort && forwardedPort !== defaultPort
+        ? `${host}:${forwardedPort}`
+        : host;
+
+    return `${protocol}://${normalizedHost}${publicPath}`;
+  }
+
+  private hostIncludesPort(host: string) {
+    if (host.startsWith("[")) {
+      return host.includes("]:");
+    }
+
+    const segments = host.split(":");
+    return segments.length > 1;
   }
 }
 

@@ -10,6 +10,7 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { environment } from '../../../../../environments/environment';
 import { SessionStore } from '../../../../core/services/session.store';
 import { CartStore } from '../../data-access/cart.store';
 import {
@@ -51,6 +52,7 @@ export class HomePageComponent {
   private readonly router = inject(Router);
   private readonly formBuilder = inject(FormBuilder);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly apiOrigin = this.resolveApiOrigin();
 
   readonly home = signal<StorefrontHomeResponse | null>(null);
   readonly loading = signal(true);
@@ -241,5 +243,57 @@ export class HomePageComponent {
 
   trackByProduct(index: number, product: StorefrontProduct) {
     return product.id || index;
+  }
+
+  resolveProductImage(product: StorefrontProduct) {
+    if (!product.image_url) {
+      return null;
+    }
+
+    if (
+      product.image_url.startsWith('http://') ||
+      product.image_url.startsWith('https://') ||
+      product.image_url.startsWith('data:')
+    ) {
+      return product.image_url;
+    }
+
+    if (product.image_url.startsWith('/uploads/')) {
+      return `${this.apiOrigin}${product.image_url}`;
+    }
+
+    return product.image_url;
+  }
+
+  onProductImageError(event: Event, product: StorefrontProduct) {
+    const img = event.target as HTMLImageElement | null;
+    if (!img) {
+      return;
+    }
+
+    const originalPath = product.image_url ?? '';
+    const currentSrc = img.getAttribute('src') ?? '';
+    const apiSrc = originalPath.startsWith('/uploads/') ? `${this.apiOrigin}${originalPath}` : '';
+
+    if (apiSrc && currentSrc !== apiSrc) {
+      img.src = apiSrc;
+      return;
+    }
+
+    if (originalPath && currentSrc !== originalPath) {
+      img.src = originalPath;
+      return;
+    }
+
+    img.onerror = null;
+    img.src = '/assets/store/catalog/obsidian-glow.svg';
+  }
+
+  private resolveApiOrigin() {
+    try {
+      return new URL(environment.apiBaseUrl, window.location.origin).origin;
+    } catch {
+      return window.location.origin;
+    }
   }
 }

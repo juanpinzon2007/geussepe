@@ -1,11 +1,13 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 import { ENTITY_OPTIONS, getEntityConfig } from '../../core/config/entity.registry';
 import { EntityColumn } from '../../core/models/app.models';
 import { ApiService } from '../../core/services/api.service';
@@ -34,9 +36,6 @@ import { PageHeaderComponent } from '../../shared/ui/page-header.component';
           [subtitle]="entityConfig.subtitle"
           [eyebrow]="entityConfig.badge ?? 'Gestion'"
         >
-          <button mat-stroked-button type="button" (click)="loadData()">
-            Actualizar
-          </button>
           <button mat-flat-button color="primary" type="button" (click)="openCreate(entityConfig)">
             Nuevo registro
           </button>
@@ -53,9 +52,8 @@ import { PageHeaderComponent } from '../../shared/ui/page-header.component';
               <input
                 matInput
                 [ngModel]="search()"
-                (ngModelChange)="search.set($event)"
+                (ngModelChange)="onSearchChange($event)"
                 placeholder="Buscar por texto"
-                (keyup.enter)="loadData()"
               >
             </label>
 
@@ -123,10 +121,12 @@ import { PageHeaderComponent } from '../../shared/ui/page-header.component';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EntityManagementPageComponent {
+  private readonly destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
   private readonly api = inject(ApiService);
   private readonly dialog = inject(MatDialog);
   private readonly uiFeedback = inject(UiFeedbackService);
+  private readonly searchChanges$ = new Subject<string>();
 
   readonly domain = signal('');
   readonly entity = signal('');
@@ -138,11 +138,24 @@ export class EntityManagementPageComponent {
   );
 
   constructor() {
-    this.route.paramMap.subscribe((params) => {
+    this.route.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
       this.domain.set(params.get('domain') ?? '');
       this.entity.set(params.get('entity') ?? '');
       this.loadData();
     });
+
+    this.searchChanges$
+      .pipe(
+        debounceTime(300),
+        distinctUntilChanged(),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe(() => this.loadData());
+  }
+
+  onSearchChange(value: string) {
+    this.search.set(value);
+    this.searchChanges$.next(value);
   }
 
   loadData() {

@@ -20,7 +20,11 @@ async function bootstrap() {
   const uploadsRoot = join(process.cwd(), "uploads");
   mkdirSync(uploadsRoot, { recursive: true });
 
-  await app.register(helmet);
+  await app.register(helmet, {
+    crossOriginResourcePolicy: {
+      policy: "cross-origin",
+    },
+  });
   await app.register(cors, { origin: true });
   await app.register(multipart, {
     limits: {
