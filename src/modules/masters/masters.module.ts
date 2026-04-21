@@ -603,6 +603,7 @@ export class MastersService {
     await pipeline(file.file, createWriteStream(filePath));
 
     const publicPath = `/uploads/products/${fileName}`;
+    const publicUrl = this.resolvePublicUrl(request, publicPath);
 
     await this.auditService.logEvent({
       modulo: "masters",
@@ -613,14 +614,14 @@ export class MastersService {
       valorNuevo: {
         archivo: fileName,
         ruta: publicPath,
-        url: publicPath,
+        url: publicUrl,
       },
     });
 
     return {
       filename: fileName,
       path: publicPath,
-      url: publicPath,
+      url: publicUrl,
     };
   }
 
@@ -649,6 +650,22 @@ export class MastersService {
     }
 
     return ".jpg";
+  }
+
+  private resolvePublicUrl(request: FastifyRequest, publicPath: string) {
+    const hostHeader = request.headers["x-forwarded-host"] ?? request.headers.host;
+    const protocolHeader = request.headers["x-forwarded-proto"];
+    const host = Array.isArray(hostHeader) ? hostHeader[0] : hostHeader;
+    const protocol =
+      (Array.isArray(protocolHeader) ? protocolHeader[0] : protocolHeader) ??
+      request.protocol ??
+      "http";
+
+    if (!host) {
+      return publicPath;
+    }
+
+    return `${protocol}://${host}${publicPath}`;
   }
 }
 

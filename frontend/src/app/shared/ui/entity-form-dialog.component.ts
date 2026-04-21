@@ -314,9 +314,9 @@ export class EntityFormDialogComponent {
     const formData = new FormData();
     formData.append('file', file);
 
-    this.api.upload<{ path?: string; url?: string }>(field.uploadEndpoint, formData).subscribe({
+    this.api.upload<{ url?: string }>(field.uploadEndpoint, formData).subscribe({
       next: (response) => {
-        const url = response.path ?? response.url ?? null;
+        const url = response.url ?? null;
         if (!url) {
           this.uiFeedback.error('La API no devolvio una URL valida para la imagen.');
           this.uploadingField.set(null);
@@ -351,7 +351,7 @@ export class EntityFormDialogComponent {
 
   previewUrl(field: FieldConfig) {
     const value = this.form.get(field.key)?.value;
-    return typeof value === 'string' && value.trim() ? this.api.resolveAssetUrl(value) : null;
+    return typeof value === 'string' && value.trim() ? value : null;
   }
 
   private resolveValue(field: FieldConfig, initialValue?: Record<string, unknown> | null) {
