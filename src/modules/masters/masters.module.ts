@@ -18,6 +18,7 @@ import { createWriteStream } from "node:fs";
 import { mkdir } from "node:fs/promises";
 import { extname, join } from "node:path";
 import { pipeline } from "node:stream/promises";
+import { FastifyRequest } from "fastify";
 import { AuthUser, CurrentUser } from "../../common/current-user.decorator";
 import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
 import { Permissions, PermissionsGuard } from "../../common/guards/permissions.guard";
@@ -31,7 +32,6 @@ import {
 import { DatabaseModule } from "../../database/database.module";
 import { DatabaseService } from "../../database/database.service";
 import { AuditModule, AuditService } from "../audit/audit.module";
-import { FastifyRequest } from "fastify";
 
 const MASTER_ENTITY_CONFIGS: Record<string, EntityConfig> = {
   countries: {
@@ -622,6 +622,7 @@ export class MastersService {
       filename: fileName,
       path: publicPath,
       url: publicUrl,
+      absolute_url: publicUrl,
     };
   }
 
@@ -682,8 +683,7 @@ export class MastersService {
       return host.includes("]:");
     }
 
-    const segments = host.split(":");
-    return segments.length > 1;
+    return host.split(":").length > 1;
   }
 }
 

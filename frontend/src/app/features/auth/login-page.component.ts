@@ -223,7 +223,7 @@ export class LoginPageComponent {
     this.hidePassword.set(!this.hidePassword());
   }
 
-    submit() {
+  submit() {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;

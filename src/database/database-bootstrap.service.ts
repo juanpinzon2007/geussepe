@@ -327,6 +327,7 @@ export class DatabaseBootstrapService implements OnModuleInit {
         const sku = this.buildSku(category.code, index);
         const price = category.basePrice + category.priceStep * index;
         const isKit = item.toLowerCase().includes("kit");
+        const productImageUrl = this.resolveSeedImageUrl(sku, category.imageUrl);
         const productResult = await this.db.query<{ id_producto: string }>(
           `
           INSERT INTO maestros.productos (
@@ -357,7 +358,14 @@ export class DatabaseBootstrapService implements OnModuleInit {
                 es_kit = EXCLUDED.es_kit,
                 temperatura_minima = EXCLUDED.temperatura_minima,
                 temperatura_maxima = EXCLUDED.temperatura_maxima,
-                url_imagen_principal = COALESCE(maestros.productos.url_imagen_principal, EXCLUDED.url_imagen_principal),
+                url_imagen_principal = CASE
+                  WHEN maestros.productos.url_imagen_principal IS NULL
+                    OR maestros.productos.url_imagen_principal = ''
+                    OR maestros.productos.url_imagen_principal = $15
+                    OR maestros.productos.url_imagen_principal LIKE '/assets/store/catalog/%'
+                  THEN EXCLUDED.url_imagen_principal
+                  ELSE maestros.productos.url_imagen_principal
+                END,
                 activo = true,
                 observaciones = EXCLUDED.observaciones
           RETURNING id_producto
@@ -377,7 +385,7 @@ export class DatabaseBootstrapService implements OnModuleInit {
             isKit,
             category.storageMin ?? null,
             category.storageMax ?? null,
-            category.imageUrl,
+            productImageUrl,
             "Catalogo curado para la tienda sensual ecommerce",
           ],
         );
@@ -418,6 +426,83 @@ export class DatabaseBootstrapService implements OnModuleInit {
 
   private buildSku(categoryCode: string, index: number) {
     return `${categoryCode.replace(/[^A-Z0-9]/g, "").slice(0, 12)}-${String(index + 1).padStart(3, "0")}`;
+  }
+
+  private resolveSeedImageUrl(sku: string, fallbackImageUrl: string) {
+    if (sku === "BDSMFETICHE-001") {
+      return "/uploads/products/bdsmfetiche-001.png";
+    }
+    if (sku === "BDSMFETICHE-002") {
+      return "/uploads/products/bdsmfetiche-002.png";
+    }
+    if (sku === "BDSMFETICHE-003") {
+      return "/uploads/products/bdsmfetiche-003.png";
+    }
+    if (sku === "BDSMFETICHE-004") {
+      return "/uploads/products/bdsmfetiche-004.png";
+    }
+    if (sku === "BDSMFETICHE-005") {
+      return "/uploads/products/bdsmfetiche-005.png";
+    }
+    if (sku === "BDSMFETICHE-006") {
+      return "/uploads/products/bdsmfetiche-006.png";
+    }
+    if (sku === "BDSMFETICHE-007") {
+      return "/uploads/products/bdsmfetiche-007.png";
+    }
+    if (sku === "BDSMFETICHE-008") {
+      return "/uploads/products/bdsmfetiche-008.png";
+    }
+    if (sku === "BDSMFETICHE-009") {
+      return "/uploads/products/bdsmfetiche-009.png";
+    }
+    if (sku === "BDSMFETICHE-010") {
+      return "/uploads/products/bdsmfetiche-010.png";
+    }
+    if (sku === "BDSMFETICHE-011") {
+      return "/uploads/products/bdsmfetiche-011.png";
+    }
+    if (sku === "PRODUCTOSPAR-001") {
+      return "/uploads/products/productospar-001.png";
+    }
+    if (sku === "PRODUCTOSPAR-002") {
+      return "/uploads/products/productospar-002.png";
+    }
+    if (sku === "PRODUCTOSPAR-003") {
+      return "/uploads/products/productospar-003.png";
+    }
+    if (sku === "PRODUCTOSPAR-004") {
+      return "/uploads/products/productospar-004.png";
+    }
+    if (sku === "PRODUCTOSPAR-005") {
+      return "/uploads/products/productospar-005.png";
+    }
+    if (sku === "LENCERIAEROT-001") {
+      return "/uploads/products/lenceriaerot-001.png";
+    }
+    if (sku === "LENCERIAEROT-002") {
+      return "/uploads/products/lenceriaerot-002.png";
+    }
+    if (sku === "LENCERIAEROT-003") {
+      return "/uploads/products/lenceriaerot-003.png";
+    }
+    if (sku === "LENCERIAEROT-004") {
+      return "/uploads/products/lenceriaerot-004.png";
+    }
+    if (sku === "LENCERIAEROT-005") {
+      return "/uploads/products/lenceriaerot-005.png";
+    }
+    if (sku === "LENCERIAEROT-006") {
+      return "/uploads/products/lenceriaerot-006.png";
+    }
+    if (sku === "LENCERIAEROT-007") {
+      return "/uploads/products/lenceriaerot-007.png";
+    }
+    if (sku === "LENCERIAEROT-008") {
+      return "/uploads/products/lenceriaerot-008.png";
+    }
+
+    return fallbackImageUrl;
   }
 
   private buildProductDescription(item: string, categoryName: string, categoryDescription: string) {

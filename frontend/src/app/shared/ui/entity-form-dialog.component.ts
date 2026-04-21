@@ -14,7 +14,6 @@ import { MatInputModule } from '@angular/material/input';
 import { ApiService } from '../../core/services/api.service';
 import { UiFeedbackService } from '../../core/services/ui-feedback.service';
 import { EntityConfig, FieldConfig } from '../../core/models/app.models';
-import { environment } from '../../../environments/environment';
 
 interface EntityFormDialogData {
   config: EntityConfig;
@@ -254,7 +253,6 @@ export class EntityFormDialogComponent {
   private readonly fb = inject(FormBuilder);
   private readonly api = inject(ApiService);
   private readonly uiFeedback = inject(UiFeedbackService);
-  private readonly apiOrigin = this.resolveApiOrigin();
 
   readonly guidedFields = (this.data.config.formFields ?? []).filter(
     (field) => this.data.isCreate || field.key !== 'password',
@@ -324,7 +322,7 @@ export class EntityFormDialogComponent {
 
     this.api.upload<UploadImageResponse>(field.uploadEndpoint, formData).subscribe({
       next: (response) => {
-        const url = this.resolveStoredImagePath(response);
+        const url = this.normalizeStoredImagePath(response);
         if (!url) {
           this.uiFeedback.error('La API no devolvio una ruta valida para la imagen.');
           this.uploadingField.set(null);
@@ -359,14 +357,10 @@ export class EntityFormDialogComponent {
 
   previewUrl(field: FieldConfig) {
     const value = this.form.get(field.key)?.value;
-    if (typeof value !== 'string' || !value.trim()) {
-      return null;
-    }
-
-    return this.resolvePreviewUrl(value.trim());
+    return typeof value === 'string' && value.trim() ? this.api.resolveAssetUrl(value) : null;
   }
 
-  private resolveStoredImagePath(response: UploadImageResponse) {
+  private normalizeStoredImagePath(response: UploadImageResponse) {
     const candidates = [response.path, response.url, response.absolute_url];
 
     for (const candidate of candidates) {
@@ -383,7 +377,11 @@ export class EntityFormDialogComponent {
       if (normalized.startsWith('http://') || normalized.startsWith('https://')) {
         try {
           const parsed = new URL(normalized);
-          return parsed.pathname + parsed.search;
+          if (parsed.pathname.startsWith('/uploads/') || parsed.pathname.startsWith('/assets/')) {
+            return parsed.pathname + parsed.search;
+          }
+
+          return parsed.toString();
         } catch {
           continue;
         }
@@ -391,30 +389,6 @@ export class EntityFormDialogComponent {
     }
 
     return null;
-  }
-
-  private resolvePreviewUrl(value: string) {
-    if (value.startsWith('http://') || value.startsWith('https://') || value.startsWith('data:')) {
-      return value;
-    }
-
-    if (value.startsWith('/uploads/')) {
-      return `${this.apiOrigin}${value}`;
-    }
-
-    if (value.startsWith('/assets/')) {
-      return `${window.location.origin}${value}`;
-    }
-
-    return value;
-  }
-
-  private resolveApiOrigin() {
-    try {
-      return new URL(environment.apiBaseUrl, window.location.origin).origin;
-    } catch {
-      return window.location.origin;
-    }
   }
 
   private resolveValue(field: FieldConfig, initialValue?: Record<string, unknown> | null) {
