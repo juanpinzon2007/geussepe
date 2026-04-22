@@ -48,10 +48,10 @@ interface FormSectionGroup {
     ReactiveFormsModule,
   ],
   template: `
-    <div class="dialog-shell">
-      <div class="dialog-shell__header">
-        <div class="dialog-shell__header-copy">
-          <span class="badge">{{ data.isCreate ? 'Nuevo registro' : 'Edicion' }}</span>
+      <div class="dialog-shell">
+        <div class="dialog-shell__header">
+          <div class="dialog-shell__header-copy">
+            <span class="badge">{{ data.isCreate ? 'Nuevo registro' : 'Edicion' }}</span>
           <h2 mat-dialog-title>
             {{ data.isCreate ? 'Crear' : 'Actualizar' }} {{ data.config.title.toLowerCase() }}
           </h2>
@@ -61,12 +61,12 @@ interface FormSectionGroup {
           </p>
         </div>
 
-        @if (guidedFields.length) {
-          <div class="dialog-shell__summary">
-            <strong>{{ guidedFields.length }}</strong>
-            <span>campos listos</span>
-          </div>
-        }
+          @if (guidedFields.length) {
+            <div class="dialog-shell__summary">
+              <strong>{{ guidedFields.length }}</strong>
+              <span>campos listos</span>
+            </div>
+          }
       </div>
 
       <mat-dialog-content>
@@ -78,7 +78,7 @@ interface FormSectionGroup {
                   <span class="dialog-shell__section-kicker">{{ section.name }}</span>
                 </div>
 
-                <div class="premium-form-grid dialog-shell__form">
+                <div class="dialog-shell__form">
                   @for (field of section.fields; track field.key) {
                     @if (field.type === 'checkbox') {
                       <div
@@ -208,13 +208,12 @@ interface FormSectionGroup {
     .dialog-shell {
       display: grid;
       gap: 0.75rem;
+      max-height: min(92vh, 980px);
     }
 
     .dialog-shell__header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 1rem;
+      display: grid;
+      gap: 0.85rem;
       padding: 0.25rem 0.25rem 0;
     }
 
@@ -241,12 +240,12 @@ interface FormSectionGroup {
     .dialog-shell__summary {
       display: grid;
       gap: 0.15rem;
-      min-width: 7rem;
+      width: fit-content;
       padding: 0.95rem 1rem;
       border-radius: 1.2rem;
       background: linear-gradient(180deg, rgba(255, 251, 247, 0.88), rgba(247, 237, 231, 0.96));
       border: 1px solid rgba(122, 24, 48, 0.1);
-      text-align: right;
+      text-align: left;
     }
 
     .dialog-shell__summary strong {
@@ -301,13 +300,19 @@ interface FormSectionGroup {
     }
 
     .dialog-shell__form {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 1rem;
       align-items: start;
+    }
+
+    .dialog-shell__form > * {
+      min-width: 0;
     }
 
     .dialog-shell__check {
       display: grid;
       gap: 0.35rem;
-      min-height: 3.5rem;
       padding: 0.55rem 0.8rem;
       border-radius: 1rem;
       background: rgba(255, 255, 255, 0.46);
@@ -366,14 +371,25 @@ interface FormSectionGroup {
     }
 
     mat-dialog-content {
-      width: min(1040px, calc(100vw - 1.5rem));
+      width: min(720px, calc(100vw - 1.5rem));
       min-width: 0;
       max-width: 100%;
+      max-height: min(70vh, 720px);
+      overflow: auto;
       padding-top: 0.5rem;
+      padding-bottom: 1rem;
     }
 
     .dialog-shell__actions {
-      padding-top: 0.5rem;
+      position: sticky;
+      bottom: 0;
+      z-index: 2;
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.75rem;
+      padding: 0.95rem 0.25rem 0.25rem;
+      margin-top: -0.25rem;
+      background: linear-gradient(180deg, rgba(247, 237, 231, 0), rgba(247, 237, 231, 0.96) 34%);
     }
 
     mat-checkbox {
@@ -381,10 +397,6 @@ interface FormSectionGroup {
     }
 
     @media (max-width: 768px) {
-      .dialog-shell__header {
-        grid-template-columns: 1fr;
-      }
-
       .dialog-shell__summary {
         min-width: 0;
         text-align: left;
