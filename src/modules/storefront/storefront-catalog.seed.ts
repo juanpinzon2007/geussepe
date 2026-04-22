@@ -190,7 +190,7 @@ export const STOREFRONT_SEED_CATEGORIES: StorefrontSeedCategory[] = [
     name: "Preservativos y proteccion",
     description: "Proteccion erotica con opciones para sensacion, rendimiento y variedad.",
     type: "PRESERVATIVO",
-    imageUrl: "/assets/store/catalog/preservativos-proteccion.svg",
+    imageUrl: "/assets/store/catalog/protection-spark.svg",
     basePrice: 17900,
     priceStep: 5000,
     requiresSanitary: true,

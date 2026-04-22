@@ -173,13 +173,19 @@ export class StorefrontService {
         products: heroProducts,
       },
       collections: collectionsResult.rows.map((row, index) => ({
+        ...(row.codigo === "PRESERVATIVOS-PROTECCION"
+          ? {
+              image_url: CATEGORY_IMAGE_BY_CODE.get(row.codigo) ?? row.lead_product_image ?? null,
+            }
+          : {
+              image_url: row.lead_product_image ?? CATEGORY_IMAGE_BY_CODE.get(row.codigo) ?? null,
+            }),
         id: row.id_categoria_producto,
         title: row.nombre,
         subtitle: row.descripcion ?? "Seleccion destacada para tu vitrina.",
         total_products: Number(row.total_productos ?? 0),
         lead_product_id: row.lead_product_id,
         lead_product_name: row.lead_product_name,
-        image_url: row.lead_product_image ?? CATEGORY_IMAGE_BY_CODE.get(row.codigo) ?? null,
         tone: this.getCollectionTone(index),
       })),
       products,
