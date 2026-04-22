@@ -175,7 +175,7 @@ export class EntityManagementPageComponent {
 
   openCreate(config: NonNullable<ReturnType<EntityManagementPageComponent['config']>>) {
     const dialogRef = this.dialog.open(EntityFormDialogComponent, {
-      width: 'min(980px, calc(100vw - 1rem))',
+      width: 'min(1140px, calc(100vw - 1rem))',
       maxWidth: '100vw',
       data: {
         config,
@@ -202,7 +202,7 @@ export class EntityManagementPageComponent {
     const id = this.resolveId(row, config.idKey);
     this.api.get<Record<string, unknown>>(`${config.endpoint}/${id}`).subscribe((record) => {
       const dialogRef = this.dialog.open(EntityFormDialogComponent, {
-        width: 'min(980px, calc(100vw - 1rem))',
+        width: 'min(1140px, calc(100vw - 1rem))',
         maxWidth: '100vw',
         data: {
           config,

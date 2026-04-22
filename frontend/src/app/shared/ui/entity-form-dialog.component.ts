@@ -72,10 +72,14 @@ interface FormSectionGroup {
       <mat-dialog-content>
         @if (guidedFields.length) {
           <form [formGroup]="form" class="dialog-shell__stack">
-            @for (section of sectionedFields(); track section.name) {
-              <section class="dialog-shell__section">
+            @for (section of sectionedFields(); track section.name; let index = $index) {
+              <section
+                class="dialog-shell__section"
+                [class.dialog-shell__section--wide]="shouldHighlightSection(section, index)"
+              >
                 <div class="dialog-shell__section-header">
                   <span class="dialog-shell__section-kicker">{{ section.name }}</span>
+                  <span class="dialog-shell__section-count">{{ section.fields.length }} campos</span>
                 </div>
 
                 <div class="dialog-shell__form">
@@ -271,17 +275,24 @@ interface FormSectionGroup {
 
     .dialog-shell__stack {
       display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 1rem;
     }
 
     .dialog-shell__section {
       display: grid;
       gap: 0.9rem;
+      align-content: start;
+      min-width: 0;
       padding: 1rem;
       border-radius: 1.4rem;
       background:
         linear-gradient(180deg, rgba(255, 255, 255, 0.46), rgba(255, 248, 243, 0.76));
       border: 1px solid rgba(122, 24, 48, 0.08);
+    }
+
+    .dialog-shell__section--wide {
+      grid-column: 1 / -1;
     }
 
     .dialog-shell__section-header {
@@ -305,10 +316,17 @@ interface FormSectionGroup {
       text-transform: uppercase;
     }
 
+    .dialog-shell__section-count {
+      color: var(--color-admin-ink-soft);
+      font-size: 0.78rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
     .dialog-shell__form {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 1rem;
+      gap: 0.85rem 1rem;
       align-items: start;
     }
 
@@ -319,7 +337,8 @@ interface FormSectionGroup {
     .dialog-shell__check {
       display: grid;
       gap: 0.35rem;
-      padding: 0.55rem 0.8rem;
+      min-height: 3.55rem;
+      padding: 0.7rem 0.8rem;
       border-radius: 1rem;
       background: rgba(255, 255, 255, 0.46);
       border: 1px solid rgba(122, 24, 48, 0.06);
@@ -377,10 +396,10 @@ interface FormSectionGroup {
     }
 
     mat-dialog-content {
-      width: min(980px, calc(100vw - 1.5rem));
+      width: min(1140px, calc(100vw - 1.5rem));
       min-width: 0;
       max-width: 100%;
-      max-height: min(74vh, 760px);
+      max-height: min(78vh, 820px);
       overflow: auto;
       padding-top: 0.5rem;
       padding-bottom: 1rem;
@@ -403,6 +422,10 @@ interface FormSectionGroup {
     }
 
     @media (max-width: 768px) {
+      .dialog-shell__stack {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
       .dialog-shell__header {
         display: grid;
       }
@@ -502,6 +525,10 @@ export class EntityFormDialogComponent {
 
   optionsFor(field: FieldConfig) {
     return this.selectOptions()[field.key] ?? [];
+  }
+
+  shouldHighlightSection(section: FormSectionGroup, index: number) {
+    return index === 0 || section.fields.length > 4;
   }
 
   preventNumericStep(field: FieldConfig, event: KeyboardEvent) {
