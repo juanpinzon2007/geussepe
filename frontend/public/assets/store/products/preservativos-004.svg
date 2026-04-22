@@ -1,0 +1,11 @@
+<svg width="720" height="720" viewBox="0 0 720 720" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="720" height="720" rx="48" fill="#2B0814"/>
+  <rect x="74" y="74" width="572" height="572" rx="36" fill="#FDF5EF"/>
+  <rect x="124" y="118" width="472" height="154" rx="24" fill="#8E1736"/>
+  <text x="154" y="182" fill="#FFF7F1" font-size="34" font-family="Arial, sans-serif" font-weight="700">Retardantes</text>
+  <text x="154" y="224" fill="#F9DCCF" font-size="20" font-family="Arial, sans-serif">Control gradual y ritmo sostenido</text>
+  <rect x="164" y="330" width="392" height="212" rx="40" fill="#FFF8F4" stroke="#DAA789" stroke-width="8"/>
+  <path d="M360 350C409.7 350 450 390.3 450 440V464H270V440C270 390.3 310.3 350 360 350Z" fill="#FFDCC8"/>
+  <circle cx="360" cy="400" r="28" fill="#FFF7F2"/>
+  <path d="M236 590H484" stroke="#E6C3B0" stroke-width="26" stroke-linecap="round"/>
+</svg>

@@ -1,0 +1,13 @@
+<svg width="720" height="720" viewBox="0 0 720 720" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="720" height="720" rx="48" fill="#260611"/>
+  <rect x="74" y="74" width="572" height="572" rx="36" fill="#FBF2EC"/>
+  <rect x="124" y="118" width="472" height="154" rx="24" fill="#B03B4E"/>
+  <text x="154" y="182" fill="#FFF7F1" font-size="34" font-family="Arial, sans-serif" font-weight="700">Saborizados</text>
+  <text x="154" y="224" fill="#FADFD2" font-size="20" font-family="Arial, sans-serif">Presentacion fresca y aromatica</text>
+  <rect x="154" y="326" width="412" height="214" rx="40" fill="#FFF7F2" stroke="#D39C7B" stroke-width="8"/>
+  <path d="M360 350C412.5 350 455 392.5 455 445V466H265V445C265 392.5 307.5 350 360 350Z" fill="#FFD6BE"/>
+  <circle cx="322" cy="386" r="14" fill="#F18AA3"/>
+  <circle cx="398" cy="388" r="14" fill="#FDB75F"/>
+  <circle cx="360" cy="432" r="14" fill="#E95573"/>
+  <rect x="194" y="582" width="332" height="32" rx="16" fill="#ECC7B1"/>
+</svg>

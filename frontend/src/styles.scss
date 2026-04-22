@@ -85,7 +85,7 @@ a {
 .premium-form-grid {
   display: grid;
   gap: 1rem;
-  grid-template-columns: minmax(0, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
 }
 
 .premium-form-grid .mat-mdc-form-field,
@@ -224,7 +224,7 @@ a {
 .form-grid {
   display: grid;
   gap: 1rem;
-  grid-template-columns: minmax(0, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
 }
 
 .full-span {
@@ -295,7 +295,7 @@ a {
   background:
     radial-gradient(circle at top right, rgba(200, 163, 108, 0.14), transparent 28%),
     linear-gradient(180deg, rgba(255, 252, 248, 1), rgba(247, 237, 231, 0.98)) !important;
-  width: min(760px, calc(100vw - 1rem));
+  width: min(980px, calc(100vw - 1rem));
   max-width: 100%;
 }
 

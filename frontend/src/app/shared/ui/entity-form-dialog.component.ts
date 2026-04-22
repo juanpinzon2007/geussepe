@@ -48,10 +48,10 @@ interface FormSectionGroup {
     ReactiveFormsModule,
   ],
   template: `
-      <div class="dialog-shell">
-        <div class="dialog-shell__header">
-          <div class="dialog-shell__header-copy">
-            <span class="badge">{{ data.isCreate ? 'Nuevo registro' : 'Edicion' }}</span>
+    <div class="dialog-shell">
+      <div class="dialog-shell__header">
+        <div class="dialog-shell__header-copy">
+          <span class="badge">{{ data.isCreate ? 'Nuevo registro' : 'Edicion' }}</span>
           <h2 mat-dialog-title>
             {{ data.isCreate ? 'Crear' : 'Actualizar' }} {{ data.config.title.toLowerCase() }}
           </h2>
@@ -61,12 +61,12 @@ interface FormSectionGroup {
           </p>
         </div>
 
-          @if (guidedFields.length) {
-            <div class="dialog-shell__summary">
-              <strong>{{ guidedFields.length }}</strong>
-              <span>campos listos</span>
-            </div>
-          }
+        @if (guidedFields.length) {
+          <div class="dialog-shell__summary">
+            <strong>{{ guidedFields.length }}</strong>
+            <span>campos listos</span>
+          </div>
+        }
       </div>
 
       <mat-dialog-content>
@@ -164,7 +164,10 @@ interface FormSectionGroup {
                           matInput
                           [formControlName]="field.key"
                           [type]="field.type === 'number' ? 'number' : field.type"
+                          [step]="field.type === 'number' ? 'any' : null"
                           [placeholder]="field.placeholder ?? ''"
+                          (keydown)="preventNumericStep(field, $event)"
+                          (wheel)="preventNumericWheel(field, $event)"
                         >
                         <textarea
                           *ngIf="field.type === 'textarea'"
@@ -212,7 +215,10 @@ interface FormSectionGroup {
     }
 
     .dialog-shell__header {
-      display: grid;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-wrap: wrap;
       gap: 0.85rem;
       padding: 0.25rem 0.25rem 0;
     }
@@ -301,7 +307,7 @@ interface FormSectionGroup {
 
     .dialog-shell__form {
       display: grid;
-      grid-template-columns: minmax(0, 1fr);
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 1rem;
       align-items: start;
     }
@@ -371,10 +377,10 @@ interface FormSectionGroup {
     }
 
     mat-dialog-content {
-      width: min(720px, calc(100vw - 1.5rem));
+      width: min(980px, calc(100vw - 1.5rem));
       min-width: 0;
       max-width: 100%;
-      max-height: min(70vh, 720px);
+      max-height: min(74vh, 760px);
       overflow: auto;
       padding-top: 0.5rem;
       padding-bottom: 1rem;
@@ -397,6 +403,14 @@ interface FormSectionGroup {
     }
 
     @media (max-width: 768px) {
+      .dialog-shell__header {
+        display: grid;
+      }
+
+      .dialog-shell__form {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
       .dialog-shell__summary {
         min-width: 0;
         text-align: left;
@@ -488,6 +502,26 @@ export class EntityFormDialogComponent {
 
   optionsFor(field: FieldConfig) {
     return this.selectOptions()[field.key] ?? [];
+  }
+
+  preventNumericStep(field: FieldConfig, event: KeyboardEvent) {
+    if (field.type !== 'number') {
+      return;
+    }
+
+    if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+      event.preventDefault();
+    }
+  }
+
+  preventNumericWheel(field: FieldConfig, event: WheelEvent) {
+    if (field.type !== 'number') {
+      return;
+    }
+
+    event.preventDefault();
+    const target = event.target as HTMLInputElement | null;
+    target?.blur();
   }
 
   isFullSpan(field: FieldConfig) {

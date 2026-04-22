@@ -1,0 +1,11 @@
+<svg width="720" height="720" viewBox="0 0 720 720" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="720" height="720" rx="48" fill="#2A0714"/>
+  <rect x="74" y="74" width="572" height="572" rx="36" fill="#FAF0E8"/>
+  <rect x="124" y="118" width="472" height="154" rx="24" fill="#7F1831"/>
+  <text x="154" y="182" fill="#FFF7F1" font-size="34" font-family="Arial, sans-serif" font-weight="700">Condones clasicos</text>
+  <text x="154" y="224" fill="#F5D6C9" font-size="20" font-family="Arial, sans-serif">Cobertura diaria y ajuste comodo</text>
+  <rect x="152" y="334" width="416" height="206" rx="34" fill="#FFF7F3" stroke="#C99272" stroke-width="10"/>
+  <circle cx="360" cy="406" r="56" fill="#FFD9BE"/>
+  <path d="M360 462C415.2 462 460 417.2 460 362V334H260V362C260 417.2 304.8 462 360 462Z" fill="#F6B995"/>
+  <rect x="192" y="576" width="336" height="40" rx="20" fill="#E7C0A8"/>
+</svg>
