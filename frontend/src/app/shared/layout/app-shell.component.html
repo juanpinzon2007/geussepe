@@ -6,15 +6,32 @@
     (closedStart)="mobileOpen.set(false)"
   >
     <section class="brand">
-      <span class="badge">El Desquite</span>
-      <h2>Salon privado</h2>
+      <span class="brand__eyebrow">Admin atelier</span>
+      <div class="brand__lockup">
+        <span class="brand__crest" aria-hidden="true"></span>
+        <div>
+          <span class="badge">Control premium</span>
+          <h2>Maison Arle</h2>
+        </div>
+      </div>
       <p class="muted">
-        Catalogo, ventas, pedidos y clientes con una cabina visual mas clara, elegante y facil
-        de leer.
+        Catalogo, ventas, pedidos y clientes en una cabina mas editorial, elegante y facil de
+        revisar.
       </p>
+      <div class="brand__meta">
+        <article>
+          <strong>{{ navigation().length }}</strong>
+          <span>modulos activos</span>
+        </article>
+        <article>
+          <strong>{{ user()?.nombre_usuario ?? 'admin' }}</strong>
+          <span>sesion actual</span>
+        </article>
+      </div>
     </section>
 
     <nav class="nav-list">
+      <span class="nav-list__label">Navegacion operativa</span>
       @for (item of navigation(); track item.route) {
         <a
           class="nav-item"
@@ -43,9 +60,10 @@
 
       <div class="shell__brandline">
         <span class="shell__brandline-mark"></span>
-        <div>
+        <div class="shell__brandline-copy">
+          <span class="shell__brandline-kicker">Cabina administrativa</span>
           <strong>El Desquite</strong>
-          <span>Cabina administrativa</span>
+          <span class="shell__brandline-subtitle">Operacion, curadoria y ventas en una sola mesa</span>
         </div>
       </div>
 
@@ -55,11 +73,21 @@
         }
       </div>
 
+      <div class="shell__status-pill">
+        <span class="shell__status-dot"></span>
+        Operacion en vivo
+      </div>
+
       <span class="shell__spacer"></span>
 
       <button mat-button [matMenuTriggerFor]="profileMenu" type="button" class="shell__profile">
-        <mat-icon fontSet="material-symbols-outlined">account_circle</mat-icon>
-        {{ user()?.nombre_usuario ?? 'Sesion' }}
+        <span class="shell__profile-avatar">
+          {{ (user()?.nombre_usuario ?? 'S').charAt(0) }}
+        </span>
+        <span class="shell__profile-copy">
+          <strong>{{ user()?.nombre_usuario ?? 'Sesion' }}</strong>
+          <span>Admin session</span>
+        </span>
       </button>
 
       <mat-menu #profileMenu="matMenu">
@@ -79,7 +107,9 @@
     }
 
     <main class="shell__content">
-      <router-outlet />
+      <div class="shell__content-frame">
+        <router-outlet />
+      </div>
     </main>
   </mat-sidenav-content>
 </mat-sidenav-container>
