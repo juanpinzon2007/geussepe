@@ -133,7 +133,9 @@ import { AuthShowcaseShellComponent } from '../../shared/ui/auth-showcase-shell/
       min-height: 3.45rem;
       font-size: 0.98rem;
       letter-spacing: 0.01em;
-      box-shadow: 0 18px 28px rgba(139, 0, 0, 0.18);
+      color: #fff8f4 !important;
+      background: linear-gradient(135deg, #5d081a 0%, #a1122e 52%, #ff4b4b 100%) !important;
+      box-shadow: 0 18px 28px rgba(122, 24, 48, 0.24) !important;
     }
 
     .auth-form__microcopy {

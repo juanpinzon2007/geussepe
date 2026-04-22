@@ -38,6 +38,8 @@ export interface FieldConfig {
   label: string;
   type: FieldType;
   required?: boolean;
+  section?: string;
+  columnSpan?: 'full' | 'half';
   placeholder?: string;
   disabled?: boolean;
   hint?: string;
