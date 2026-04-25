@@ -295,8 +295,15 @@ a {
   background:
     radial-gradient(circle at top right, rgba(200, 163, 108, 0.14), transparent 28%),
     linear-gradient(180deg, rgba(255, 252, 248, 1), rgba(247, 237, 231, 0.98)) !important;
-  width: min(1140px, calc(100vw - 1rem));
+  width: min(1260px, calc(100vw - 1rem));
   max-width: 100%;
+}
+
+.entity-form-dialog-panel .mat-mdc-dialog-surface {
+  width: min(1440px, calc(100vw - 0.75rem));
+  max-width: 100%;
+  max-height: 96vh;
+  overflow: hidden;
 }
 
 .mat-mdc-form-field {
@@ -316,9 +323,9 @@ a {
 }
 
 .mat-mdc-form-field.mat-form-field-appearance-outline .mat-mdc-form-field-infix {
-  min-height: 3.5rem;
-  padding-top: 1rem;
-  padding-bottom: 0.85rem;
+  min-height: 3rem;
+  padding-top: 0.82rem;
+  padding-bottom: 0.68rem;
 }
 
 .mat-mdc-form-field .mdc-floating-label {

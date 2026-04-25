@@ -1,5 +1,13 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  afterNextRender,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -51,155 +59,274 @@ interface FormSectionGroup {
     <div class="dialog-shell">
       <div class="dialog-shell__header">
         <div class="dialog-shell__header-copy">
-          <span class="badge">{{ data.isCreate ? 'Nuevo registro' : 'Edicion' }}</span>
+          <div class="dialog-shell__header-tags">
+            <span class="badge">{{ data.config.badge ?? 'Gestion' }}</span>
+            <span class="dialog-shell__mode">
+              {{ data.isCreate ? 'Alta guiada' : 'Edicion guiada' }}
+            </span>
+          </div>
           <h2 mat-dialog-title>
             {{ data.isCreate ? 'Crear' : 'Actualizar' }} {{ data.config.title.toLowerCase() }}
           </h2>
-          <p class="muted">
-            Ordenamos los campos en bloques claros para que el flujo del admin sea mas rapido y
-            menos cansado.
-          </p>
+          <p class="dialog-shell__subtitle">{{ data.config.subtitle }}</p>
         </div>
 
         @if (guidedFields.length) {
           <div class="dialog-shell__summary">
             <strong>{{ guidedFields.length }}</strong>
-            <span>campos listos</span>
+            <span>campos</span>
+            <small>{{ sectionedFields().length }} bloques</small>
           </div>
         }
       </div>
 
       <mat-dialog-content>
         @if (guidedFields.length) {
-          <form [formGroup]="form" class="dialog-shell__stack">
-            @for (section of sectionedFields(); track section.name; let index = $index) {
-              <section
-                class="dialog-shell__section"
-                [class.dialog-shell__section--wide]="shouldHighlightSection(section, index)"
-              >
-                <div class="dialog-shell__section-header">
-                  <span class="dialog-shell__section-kicker">{{ section.name }}</span>
-                  <span class="dialog-shell__section-count">{{ section.fields.length }} campos</span>
+          <div class="dialog-shell__layout">
+            <aside class="dialog-shell__aside">
+              <section class="dialog-shell__aside-card">
+                <div class="dialog-shell__aside-heading">
+                  <span class="dialog-shell__aside-kicker">Resumen operativo</span>
+                  <span class="dialog-shell__aside-caption">
+                    {{ data.isCreate ? 'Captura nueva' : 'Edicion activa' }}
+                  </span>
                 </div>
 
-                <div class="dialog-shell__form">
-                  @for (field of section.fields; track field.key) {
-                    @if (field.type === 'checkbox') {
-                      <div
-                        class="dialog-shell__check"
-                        [class.full-span]="isFullSpan(field)"
-                      >
-                        <mat-checkbox [formControlName]="field.key">{{ field.label }}</mat-checkbox>
-                        @if (field.hint) {
-                          <span class="dialog-shell__inline-hint">{{ field.hint }}</span>
-                        }
-                      </div>
-                    } @else if (field.type === 'file') {
-                      <div
-                        class="dialog-shell__file"
-                        [class.full-span]="isFullSpan(field)"
-                      >
-                        <mat-form-field class="full-width">
-                          <mat-label>{{ field.label }}</mat-label>
-                          <input
-                            matInput
-                            [formControlName]="field.key"
-                            [placeholder]="field.placeholder ?? 'Selecciona una imagen'"
-                            readonly
-                          >
-                          <button
-                            matSuffix
-                            mat-icon-button
-                            type="button"
-                            [disabled]="uploadingField() === field.key"
-                            (click)="filePicker.click()"
-                            aria-label="Subir imagen"
-                          >
-                            <mat-icon fontSet="material-symbols-outlined">
-                              {{ uploadingField() === field.key ? 'hourglass_top' : 'upload' }}
-                            </mat-icon>
-                          </button>
-                          @if (field.hint) {
-                            <mat-hint>{{ field.hint }}</mat-hint>
-                          }
-                        </mat-form-field>
+                <div class="dialog-shell__metric-grid">
+                  <article class="dialog-shell__metric">
+                    <strong>{{ requiredFieldsCount }}</strong>
+                    <span>Obligatorios</span>
+                  </article>
+                  <article class="dialog-shell__metric">
+                    <strong>{{ optionalFieldsCount }}</strong>
+                    <span>Opcionales</span>
+                  </article>
+                  <article class="dialog-shell__metric">
+                    <strong>{{ sectionedFields().length }}</strong>
+                    <span>Secciones</span>
+                  </article>
+                </div>
 
-                        <input
-                          #filePicker
-                          class="dialog-shell__file-input"
-                          type="file"
-                          [accept]="field.accept ?? 'image/*'"
-                          (change)="onFileSelected(field, $event)"
-                        >
-
-                        @if (previewUrl(field); as preview) {
-                          <div class="dialog-shell__preview">
-                            <img [src]="preview" [alt]="field.label">
-                            <div class="dialog-shell__preview-copy">
-                              <strong>
-                                {{ uploadingField() === field.key ? 'Subiendo imagen...' : 'Imagen lista' }}
-                              </strong>
-                              <span class="muted">{{ preview }}</span>
-                              <button mat-button type="button" (click)="clearFile(field)">Quitar</button>
-                            </div>
-                          </div>
-                        }
-                      </div>
-                    } @else if (field.type === 'select') {
-                      <mat-form-field [class.full-span]="isFullSpan(field)">
-                        <mat-label>{{ field.label }}</mat-label>
-                        <mat-select [formControlName]="field.key">
-                          @if (!field.required) {
-                            <mat-option [value]="null">Sin seleccionar</mat-option>
-                          }
-                          @for (option of optionsFor(field); track option.value) {
-                            <mat-option [value]="option.value">{{ option.label }}</mat-option>
-                          }
-                        </mat-select>
-                        @if (field.hint) {
-                          <mat-hint>{{ field.hint }}</mat-hint>
-                        }
-                      </mat-form-field>
-                    } @else {
-                      <mat-form-field [class.full-span]="isFullSpan(field)">
-                        <mat-label>{{ field.label }}</mat-label>
-                        <input
-                          *ngIf="field.type !== 'textarea'"
-                          matInput
-                          [formControlName]="field.key"
-                          [type]="field.type === 'number' ? 'number' : field.type"
-                          [step]="field.type === 'number' ? 'any' : null"
-                          [placeholder]="field.placeholder ?? ''"
-                          (keydown)="preventNumericStep(field, $event)"
-                          (wheel)="preventNumericWheel(field, $event)"
-                        >
-                        <textarea
-                          *ngIf="field.type === 'textarea'"
-                          matInput
-                          [rows]="field.rows ?? 4"
-                          [formControlName]="field.key"
-                          [placeholder]="field.placeholder ?? ''"
-                        ></textarea>
-                        @if (field.hint) {
-                          <mat-hint>{{ field.hint }}</mat-hint>
-                        }
-                      </mat-form-field>
-                    }
-                  }
+                <div class="dialog-shell__progress">
+                  <div class="dialog-shell__progress-copy">
+                    <strong>{{ completedFieldCount() }}/{{ guidedFields.length }}</strong>
+                    <span>campos completos</span>
+                  </div>
+                  <div class="dialog-shell__progress-bar">
+                    <span [style.width.%]="completionPercentage()"></span>
+                  </div>
                 </div>
               </section>
-            }
-          </form>
+
+              <section class="dialog-shell__aside-card">
+                <div class="dialog-shell__aside-heading">
+                  <span class="dialog-shell__aside-kicker">Navegacion rapida</span>
+                  <span class="dialog-shell__aside-caption">Todo al alcance</span>
+                </div>
+
+                <nav class="dialog-shell__navigator">
+                  @for (section of sectionedFields(); track section.name) {
+                    <button
+                      type="button"
+                      class="dialog-shell__nav-item"
+                      [class.is-complete]="sectionCompletedCount(section) === section.fields.length"
+                      (click)="scrollToSection(section.name)"
+                    >
+                      <span>{{ section.name }}</span>
+                      <small>{{ sectionCompletedCount(section) }}/{{ section.fields.length }}</small>
+                    </button>
+                  }
+                </nav>
+
+                <p class="dialog-shell__aside-note">
+                  Los obligatorios se validan y el guardado queda fijo en la parte inferior.
+                </p>
+              </section>
+            </aside>
+
+            <form [formGroup]="form" class="dialog-shell__stack">
+              @for (section of sectionedFields(); track section.name) {
+                <section
+                  class="dialog-shell__section"
+                  [attr.data-section]="sectionAnchor(section.name)"
+                >
+                  <div class="dialog-shell__section-header">
+                    <div class="dialog-shell__section-copy">
+                      <span class="dialog-shell__section-kicker">{{ section.name }}</span>
+                      <p>
+                        @if (sectionRequiredCount(section)) {
+                          {{ sectionRequiredCount(section) }} obligatorios y
+                        }
+                        {{ section.fields.length }} campos en total
+                      </p>
+                    </div>
+
+                    <span
+                      class="dialog-shell__section-count"
+                      [class.is-complete]="sectionCompletedCount(section) === section.fields.length"
+                    >
+                      {{ sectionCompletedCount(section) }}/{{ section.fields.length }}
+                    </span>
+                  </div>
+
+                  <div class="dialog-shell__form">
+                    @for (field of section.fields; track field.key) {
+                      <div class="dialog-shell__field" [class.full-span]="isFullSpan(field)">
+                        @if (field.type === 'checkbox') {
+                          <div class="dialog-shell__toggle-card">
+                            <div class="dialog-shell__toggle-main">
+                              <mat-checkbox [formControlName]="field.key">{{ field.label }}</mat-checkbox>
+                              @if (field.required) {
+                                <span class="dialog-shell__field-badge">Obligatorio</span>
+                              }
+                            </div>
+                            @if (field.hint) {
+                              <p class="dialog-shell__field-note">{{ field.hint }}</p>
+                            }
+                            @if (showError(field)) {
+                              <span class="dialog-shell__error">{{ errorMessage(field) }}</span>
+                            }
+                          </div>
+                        } @else if (field.type === 'file') {
+                          <div class="dialog-shell__upload-card">
+                            <div class="dialog-shell__upload-top">
+                              <div class="dialog-shell__upload-copy">
+                                <span class="dialog-shell__upload-title">{{ field.label }}</span>
+                                <p>{{ field.hint ?? 'Selecciona un archivo y el sistema lo asociara al registro.' }}</p>
+                              </div>
+
+                              <div class="dialog-shell__upload-actions">
+                                @if (field.required) {
+                                  <span class="dialog-shell__field-badge">Obligatorio</span>
+                                }
+                                <button
+                                  mat-stroked-button
+                                  type="button"
+                                  [disabled]="uploadingField() === field.key"
+                                  (click)="filePicker.click()"
+                                >
+                                  <mat-icon fontSet="material-symbols-outlined">
+                                    {{ uploadingField() === field.key ? 'hourglass_top' : 'upload' }}
+                                  </mat-icon>
+                                  {{ uploadingField() === field.key ? 'Subiendo...' : 'Seleccionar imagen' }}
+                                </button>
+                              </div>
+                            </div>
+
+                            <input
+                              #filePicker
+                              class="dialog-shell__file-input"
+                              type="file"
+                              [accept]="field.accept ?? 'image/*'"
+                              (change)="onFileSelected(field, $event)"
+                            >
+
+                            @if (storedValue(field); as value) {
+                              <span class="dialog-shell__upload-path">{{ value }}</span>
+                            }
+
+                            @if (previewUrl(field); as preview) {
+                              <div class="dialog-shell__preview">
+                                <img [src]="preview" [alt]="field.label">
+                                <div class="dialog-shell__preview-copy">
+                                  <strong>
+                                    {{ uploadingField() === field.key ? 'Subiendo imagen...' : 'Imagen lista' }}
+                                  </strong>
+                                  <span class="muted">{{ preview }}</span>
+                                  <button mat-button type="button" (click)="clearFile(field)">Quitar</button>
+                                </div>
+                              </div>
+                            }
+
+                            @if (showError(field)) {
+                              <span class="dialog-shell__error">{{ errorMessage(field) }}</span>
+                            }
+                          </div>
+                        } @else if (field.type === 'select') {
+                          <div class="dialog-shell__field-flags">
+                            @if (field.required) {
+                              <span class="dialog-shell__field-badge">Obligatorio</span>
+                            }
+                          </div>
+
+                          <mat-form-field class="full-width">
+                            <mat-label>{{ field.label }}</mat-label>
+                            <mat-select [formControlName]="field.key">
+                              @if (!field.required) {
+                                <mat-option [value]="null">Sin seleccionar</mat-option>
+                              }
+                              @for (option of optionsFor(field); track option.value) {
+                                <mat-option [value]="option.value">{{ option.label }}</mat-option>
+                              }
+                            </mat-select>
+                            @if (showError(field)) {
+                              <mat-error>{{ errorMessage(field) }}</mat-error>
+                            } @else if (field.hint) {
+                              <mat-hint>{{ field.hint }}</mat-hint>
+                            }
+                          </mat-form-field>
+                        } @else {
+                          <div class="dialog-shell__field-flags">
+                            @if (field.required) {
+                              <span class="dialog-shell__field-badge">Obligatorio</span>
+                            }
+                          </div>
+
+                          <mat-form-field class="full-width">
+                            <mat-label>{{ field.label }}</mat-label>
+                            <input
+                              *ngIf="field.type !== 'textarea'"
+                              matInput
+                              [formControlName]="field.key"
+                              [type]="field.type === 'number' ? 'number' : field.type"
+                              [step]="field.type === 'number' ? 'any' : null"
+                              [placeholder]="field.placeholder ?? ''"
+                              (keydown)="preventNumericStep(field, $event)"
+                              (wheel)="preventNumericWheel(field, $event)"
+                            >
+                            <textarea
+                              *ngIf="field.type === 'textarea'"
+                              matInput
+                              [rows]="field.rows ?? 4"
+                              [formControlName]="field.key"
+                              [placeholder]="field.placeholder ?? ''"
+                            ></textarea>
+                            @if (showError(field)) {
+                              <mat-error>{{ errorMessage(field) }}</mat-error>
+                            } @else if (field.hint) {
+                              <mat-hint>{{ field.hint }}</mat-hint>
+                            }
+                          </mat-form-field>
+                        }
+                      </div>
+                    }
+                  </div>
+                </section>
+              }
+            </form>
+          </div>
         } @else {
-          <mat-form-field class="full-width">
-            <mat-label>Payload JSON</mat-label>
-            <textarea
-              matInput
-              rows="18"
-              [formControl]="jsonControl"
-              spellcheck="false"
-            ></textarea>
-          </mat-form-field>
+          <section class="dialog-shell__json-card">
+            <div class="dialog-shell__section-header">
+              <div class="dialog-shell__section-copy">
+                <span class="dialog-shell__section-kicker">Payload manual</span>
+                <p>Esta entidad no tiene formulario guiado, asi que se edita como JSON.</p>
+              </div>
+            </div>
+
+            <mat-form-field class="full-width">
+              <mat-label>Payload JSON</mat-label>
+              <textarea
+                matInput
+                rows="18"
+                [formControl]="jsonControl"
+                spellcheck="false"
+              ></textarea>
+              @if (jsonControl.hasError('invalidJson')) {
+                <mat-error>El JSON no es valido.</mat-error>
+              }
+            </mat-form-field>
+          </section>
         }
       </mat-dialog-content>
 
@@ -214,8 +341,8 @@ interface FormSectionGroup {
   styles: `
     .dialog-shell {
       display: grid;
-      gap: 0.75rem;
-      max-height: min(92vh, 980px);
+      gap: 0.85rem;
+      max-height: min(94vh, 1040px);
     }
 
     .dialog-shell__header {
@@ -223,60 +350,262 @@ interface FormSectionGroup {
       justify-content: space-between;
       align-items: flex-start;
       flex-wrap: wrap;
-      gap: 0.85rem;
-      padding: 0.25rem 0.25rem 0;
+      gap: 0.75rem;
+      padding: 0.15rem 0.25rem 0;
     }
 
     .dialog-shell__header-copy {
       display: grid;
       gap: 0.45rem;
+      max-width: 54rem;
+    }
+
+    .dialog-shell__header-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.55rem;
+      align-items: center;
+    }
+
+    .dialog-shell__mode {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.35rem 0.7rem;
+      border-radius: 999px;
+      background: rgba(122, 24, 48, 0.08);
+      color: var(--color-admin-burgundy);
+      font-size: 0.76rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
     }
 
     .dialog-shell__header h2 {
       margin: 0;
       font-family: var(--font-admin-display);
-      font-size: clamp(2.2rem, 4vw, 3rem);
+      font-size: clamp(1.9rem, 3vw, 2.45rem);
       font-weight: 700;
-      line-height: 0.92;
+      line-height: 0.96;
       letter-spacing: -0.03em;
       color: var(--color-admin-ink);
     }
 
-    .dialog-shell__header p {
+    .dialog-shell__subtitle {
       margin: 0;
-      max-width: 40rem;
+      max-width: 48rem;
+      color: var(--color-admin-ink-soft);
+      line-height: 1.55;
     }
 
     .dialog-shell__summary {
       display: grid;
-      gap: 0.15rem;
+      gap: 0.16rem;
       width: fit-content;
-      padding: 0.95rem 1rem;
+      min-width: 7rem;
+      padding: 0.8rem 0.95rem;
       border-radius: 1.2rem;
-      background: linear-gradient(180deg, rgba(255, 251, 247, 0.88), rgba(247, 237, 231, 0.96));
-      border: 1px solid rgba(122, 24, 48, 0.1);
+      background:
+        radial-gradient(circle at top right, rgba(200, 163, 108, 0.16), transparent 45%),
+        linear-gradient(180deg, rgba(255, 251, 247, 0.92), rgba(247, 237, 231, 0.98));
+      border: 1px solid rgba(122, 24, 48, 0.12);
       text-align: left;
+      box-shadow: 0 16px 34px rgba(67, 10, 24, 0.08);
     }
 
     .dialog-shell__summary strong {
       font-family: var(--font-admin-display);
-      font-size: 1.5rem;
+      font-size: 1.55rem;
       line-height: 1;
       color: var(--color-admin-ink);
     }
 
     .dialog-shell__summary span {
       color: var(--color-admin-ink-soft);
-      font-size: 0.7rem;
+      font-size: 0.66rem;
       font-weight: 800;
       letter-spacing: 0.12em;
       text-transform: uppercase;
     }
 
+    .dialog-shell__summary small {
+      color: var(--color-admin-ink-soft);
+      font-size: 0.78rem;
+      font-weight: 600;
+    }
+
+    .dialog-shell__layout {
+      display: grid;
+      grid-template-columns: minmax(250px, 290px) minmax(0, 1fr);
+      gap: 1rem;
+      align-items: start;
+    }
+
+    .dialog-shell__aside {
+      display: grid;
+      gap: 0.85rem;
+      position: sticky;
+      top: 0;
+      align-self: start;
+    }
+
+    .dialog-shell__aside-card,
+    .dialog-shell__json-card {
+      display: grid;
+      gap: 0.9rem;
+      padding: 1rem;
+      border-radius: 1.35rem;
+      background:
+        radial-gradient(circle at top right, rgba(200, 163, 108, 0.14), transparent 42%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(255, 248, 243, 0.92));
+      border: 1px solid rgba(122, 24, 48, 0.1);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75);
+    }
+
+    .dialog-shell__aside-heading {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .dialog-shell__aside-kicker {
+      color: var(--color-admin-burgundy);
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .dialog-shell__aside-caption {
+      color: var(--color-admin-ink-soft);
+      font-size: 0.78rem;
+      font-weight: 600;
+    }
+
+    .dialog-shell__metric-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0.6rem;
+    }
+
+    .dialog-shell__metric {
+      display: grid;
+      gap: 0.15rem;
+      padding: 0.8rem 0.75rem;
+      border-radius: 1rem;
+      background: rgba(255, 255, 255, 0.64);
+      border: 1px solid rgba(122, 24, 48, 0.08);
+      text-align: center;
+    }
+
+    .dialog-shell__metric strong {
+      color: var(--color-admin-burgundy-strong);
+      font-size: 1.2rem;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .dialog-shell__metric span {
+      color: var(--color-admin-ink-soft);
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .dialog-shell__progress {
+      display: grid;
+      gap: 0.6rem;
+    }
+
+    .dialog-shell__progress-copy {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 0.75rem;
+    }
+
+    .dialog-shell__progress-copy strong {
+      color: var(--color-admin-ink);
+      font-size: 1rem;
+      font-weight: 800;
+    }
+
+    .dialog-shell__progress-copy span {
+      color: var(--color-admin-ink-soft);
+      font-size: 0.78rem;
+    }
+
+    .dialog-shell__progress-bar {
+      overflow: hidden;
+      height: 0.6rem;
+      border-radius: 999px;
+      background: rgba(122, 24, 48, 0.08);
+    }
+
+    .dialog-shell__progress-bar span {
+      display: block;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #7a1830 0%, #b34761 60%, #d9b072 100%);
+      transition: width 160ms ease;
+    }
+
+    .dialog-shell__navigator {
+      display: grid;
+      gap: 0.55rem;
+    }
+
+    .dialog-shell__nav-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.75rem;
+      width: 100%;
+      padding: 0.8rem 0.9rem;
+      border: 1px solid rgba(122, 24, 48, 0.1);
+      border-radius: 1rem;
+      background: rgba(255, 255, 255, 0.66);
+      color: var(--color-admin-ink);
+      text-align: left;
+      transition:
+        transform 160ms ease,
+        border-color 160ms ease,
+        box-shadow 160ms ease;
+    }
+
+    .dialog-shell__nav-item:hover {
+      transform: translateY(-1px);
+      border-color: rgba(122, 24, 48, 0.22);
+      box-shadow: 0 12px 24px rgba(67, 10, 24, 0.08);
+    }
+
+    .dialog-shell__nav-item span {
+      font-weight: 700;
+    }
+
+    .dialog-shell__nav-item small {
+      color: var(--color-admin-ink-soft);
+      font-size: 0.76rem;
+      font-weight: 700;
+    }
+
+    .dialog-shell__nav-item.is-complete {
+      border-color: rgba(122, 24, 48, 0.18);
+      background: rgba(255, 244, 246, 0.84);
+    }
+
+    .dialog-shell__aside-note {
+      margin: 0;
+      color: var(--color-admin-ink-soft);
+      font-size: 0.84rem;
+      line-height: 1.55;
+    }
+
     .dialog-shell__stack {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 1rem;
+      gap: 0.9rem;
     }
 
     .dialog-shell__section {
@@ -285,21 +614,24 @@ interface FormSectionGroup {
       align-content: start;
       min-width: 0;
       padding: 1rem;
-      border-radius: 1.4rem;
+      border-radius: 1.35rem;
       background:
-        linear-gradient(180deg, rgba(255, 255, 255, 0.46), rgba(255, 248, 243, 0.76));
-      border: 1px solid rgba(122, 24, 48, 0.08);
-    }
-
-    .dialog-shell__section--wide {
-      grid-column: 1 / -1;
+        radial-gradient(circle at top right, rgba(200, 163, 108, 0.12), transparent 42%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.58), rgba(255, 248, 243, 0.88));
+      border: 1px solid rgba(122, 24, 48, 0.09);
     }
 
     .dialog-shell__section-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 0.75rem;
+      flex-wrap: wrap;
+      gap: 0.5rem 0.75rem;
+    }
+
+    .dialog-shell__section-copy {
+      display: grid;
+      gap: 0.22rem;
     }
 
     .dialog-shell__section-kicker {
@@ -316,65 +648,167 @@ interface FormSectionGroup {
       text-transform: uppercase;
     }
 
-    .dialog-shell__section-count {
+    .dialog-shell__section-copy p {
+      margin: 0;
       color: var(--color-admin-ink-soft);
-      font-size: 0.78rem;
+      line-height: 1.45;
+    }
+
+    .dialog-shell__section-count {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 4.25rem;
+      padding: 0.45rem 0.7rem;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.68);
+      border: 1px solid rgba(122, 24, 48, 0.1);
+      color: var(--color-admin-ink-soft);
+      font-size: 0.76rem;
       font-weight: 700;
       white-space: nowrap;
     }
 
+    .dialog-shell__section-count.is-complete {
+      background: rgba(255, 244, 246, 0.9);
+      color: var(--color-admin-burgundy);
+      border-color: rgba(122, 24, 48, 0.16);
+    }
+
     .dialog-shell__form {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 0.85rem 1rem;
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      gap: 0.8rem;
       align-items: start;
     }
 
-    .dialog-shell__form > * {
+    .dialog-shell__field {
+      grid-column: span 6;
       min-width: 0;
     }
 
-    .dialog-shell__check {
-      display: grid;
-      gap: 0.35rem;
-      min-height: 3.55rem;
-      padding: 0.7rem 0.8rem;
-      border-radius: 1rem;
-      background: rgba(255, 255, 255, 0.46);
-      border: 1px solid rgba(122, 24, 48, 0.06);
+    .dialog-shell__field.full-span {
+      grid-column: 1 / -1;
     }
 
-    .dialog-shell__inline-hint {
+    .dialog-shell__field-flags {
+      display: flex;
+      justify-content: flex-end;
+      min-height: 1.5rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .dialog-shell__field-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.24rem 0.56rem;
+      border-radius: 999px;
+      background: rgba(122, 24, 48, 0.09);
+      color: var(--color-admin-burgundy);
+      font-size: 0.7rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .dialog-shell__toggle-card {
+      display: grid;
+      gap: 0.45rem;
+      padding: 0.88rem 1rem;
+      border-radius: 1.05rem;
+      background: rgba(255, 255, 255, 0.62);
+      border: 1px solid rgba(122, 24, 48, 0.08);
+      min-height: 100%;
+    }
+
+    .dialog-shell__toggle-main {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .dialog-shell__field-note {
+      margin: 0;
       color: var(--color-admin-ink-soft);
-      font-size: 0.8rem;
+      font-size: 0.84rem;
       line-height: 1.5;
     }
 
-    .dialog-shell__file {
+    .dialog-shell__upload-card {
       display: grid;
-      gap: 0.85rem;
+      gap: 0.8rem;
+      padding: 1rem;
+      border-radius: 1.15rem;
+      background: rgba(255, 255, 255, 0.64);
+      border: 1px solid rgba(122, 24, 48, 0.09);
+    }
+
+    .dialog-shell__upload-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      align-items: flex-start;
+      flex-wrap: wrap;
+    }
+
+    .dialog-shell__upload-copy {
+      display: grid;
+      gap: 0.28rem;
+      max-width: 32rem;
+    }
+
+    .dialog-shell__upload-title {
+      color: var(--color-admin-ink);
+      font-weight: 700;
+    }
+
+    .dialog-shell__upload-copy p {
+      margin: 0;
+      color: var(--color-admin-ink-soft);
+      line-height: 1.5;
+    }
+
+    .dialog-shell__upload-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 0.6rem;
+      margin-left: auto;
     }
 
     .dialog-shell__file-input {
       display: none;
     }
 
+    .dialog-shell__upload-path {
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: var(--color-admin-ink-soft);
+      font-size: 0.82rem;
+      font-family: ui-monospace, 'SFMono-Regular', monospace;
+    }
+
     .dialog-shell__preview {
       display: grid;
-      grid-template-columns: 110px minmax(0, 1fr);
-      gap: 1rem;
+      grid-template-columns: 96px minmax(0, 1fr);
+      gap: 0.85rem;
       align-items: center;
-      padding: 0.95rem;
-      border-radius: 1.1rem;
+      padding: 0.8rem;
+      border-radius: 1rem;
       background: rgba(255, 244, 246, 0.92);
       border: 1px solid rgba(122, 24, 48, 0.12);
     }
 
     .dialog-shell__preview img {
-      width: 110px;
-      height: 110px;
+      width: 96px;
+      height: 96px;
       object-fit: cover;
-      border-radius: 0.9rem;
+      border-radius: 0.8rem;
       background: rgba(255, 255, 255, 0.92);
       box-shadow: 0 18px 35px rgba(70, 12, 36, 0.12);
     }
@@ -391,18 +825,27 @@ interface FormSectionGroup {
       white-space: nowrap;
     }
 
+    .dialog-shell__error {
+      color: var(--color-danger);
+      font-size: 0.79rem;
+      font-weight: 600;
+      line-height: 1.45;
+    }
+
     .full-width {
       width: 100%;
     }
 
     mat-dialog-content {
-      width: min(1140px, calc(100vw - 1.5rem));
+      width: 100%;
       min-width: 0;
       max-width: 100%;
-      max-height: min(78vh, 820px);
+      max-height: min(84vh, 900px);
       overflow: auto;
-      padding-top: 0.5rem;
-      padding-bottom: 1rem;
+      padding-top: 0.35rem;
+      padding-bottom: 0.9rem;
+      scrollbar-gutter: stable;
+      scroll-behavior: smooth;
     }
 
     .dialog-shell__actions {
@@ -412,7 +855,7 @@ interface FormSectionGroup {
       display: flex;
       justify-content: flex-end;
       gap: 0.75rem;
-      padding: 0.95rem 0.25rem 0.25rem;
+      padding: 0.8rem 0.25rem 0.25rem;
       margin-top: -0.25rem;
       background: linear-gradient(180deg, rgba(247, 237, 231, 0), rgba(247, 237, 231, 0.96) 34%);
     }
@@ -421,22 +864,73 @@ interface FormSectionGroup {
       padding: 0.1rem 0;
     }
 
-    @media (max-width: 768px) {
-      .dialog-shell__stack {
+    .dialog-shell__json-card {
+      padding: 1rem;
+    }
+
+    input[type='number'] {
+      appearance: textfield;
+      -moz-appearance: textfield;
+    }
+
+    input[type='number']::-webkit-outer-spin-button,
+    input[type='number']::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    @media (max-width: 1140px) {
+      .dialog-shell__layout {
         grid-template-columns: minmax(0, 1fr);
       }
 
+      .dialog-shell__aside {
+        position: static;
+      }
+
+      .dialog-shell__form {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .dialog-shell__field {
+        grid-column: span 1;
+      }
+
+      .dialog-shell__field.full-span {
+        grid-column: 1 / -1;
+      }
+    }
+
+    @media (max-width: 768px) {
       .dialog-shell__header {
         display: grid;
+      }
+
+      .dialog-shell__summary {
+        min-width: 0;
+        text-align: left;
+      }
+
+      .dialog-shell__metric-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
       }
 
       .dialog-shell__form {
         grid-template-columns: minmax(0, 1fr);
       }
 
-      .dialog-shell__summary {
-        min-width: 0;
-        text-align: left;
+      .dialog-shell__field,
+      .dialog-shell__field.full-span {
+        grid-column: 1;
+      }
+
+      .dialog-shell__upload-top {
+        display: grid;
+      }
+
+      .dialog-shell__upload-actions {
+        justify-content: flex-start;
+        margin-left: 0;
       }
 
       .dialog-shell__preview {
@@ -452,10 +946,13 @@ export class EntityFormDialogComponent {
   private readonly fb = inject(FormBuilder);
   private readonly api = inject(ApiService);
   private readonly uiFeedback = inject(UiFeedbackService);
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
 
   readonly guidedFields = (this.data.config.formFields ?? []).filter(
     (field) => this.data.isCreate || field.key !== 'password',
   );
+  readonly requiredFieldsCount = this.guidedFields.filter((field) => field.required).length;
+  readonly optionalFieldsCount = this.guidedFields.length - this.requiredFieldsCount;
   readonly uploadingField = signal<string | null>(null);
   readonly selectOptions = signal<Record<string, SelectFieldOption[]>>({});
   readonly sectionedFields = computed<FormSectionGroup[]>(() => {
@@ -471,7 +968,10 @@ export class EntityFormDialogComponent {
   readonly form = this.fb.group(
     this.guidedFields.reduce<Record<string, unknown>>((controls, field) => {
       controls[field.key] = [
-        this.resolveValue(field, this.data.initialValue),
+        {
+          value: this.resolveValue(field, this.data.initialValue),
+          disabled: Boolean(field.disabled),
+        },
         field.required ? Validators.required : [],
       ];
       return controls;
@@ -484,6 +984,9 @@ export class EntityFormDialogComponent {
 
   constructor() {
     this.preloadSelectOptions();
+    afterNextRender(() => {
+      this.focusFirstField();
+    });
   }
 
   submit() {
@@ -495,6 +998,7 @@ export class EntityFormDialogComponent {
     if (this.guidedFields.length) {
       if (this.form.invalid) {
         this.form.markAllAsTouched();
+        this.focusFirstInvalidField();
         return;
       }
 
@@ -527,8 +1031,63 @@ export class EntityFormDialogComponent {
     return this.selectOptions()[field.key] ?? [];
   }
 
-  shouldHighlightSection(section: FormSectionGroup, index: number) {
-    return index === 0 || section.fields.length > 4;
+  completedFieldCount() {
+    return this.guidedFields.filter((field) => this.isFieldCompleted(field)).length;
+  }
+
+  completionPercentage() {
+    if (!this.guidedFields.length) {
+      return 0;
+    }
+
+    return Math.round((this.completedFieldCount() / this.guidedFields.length) * 100);
+  }
+
+  sectionCompletedCount(section: FormSectionGroup) {
+    return section.fields.filter((field) => this.isFieldCompleted(field)).length;
+  }
+
+  sectionRequiredCount(section: FormSectionGroup) {
+    return section.fields.filter((field) => field.required).length;
+  }
+
+  sectionAnchor(sectionName: string) {
+    return sectionName
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+  }
+
+  scrollToSection(sectionName: string) {
+    const anchor = this.sectionAnchor(sectionName);
+    const section = this.host.nativeElement.querySelector<HTMLElement>(`[data-section="${anchor}"]`);
+    section?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  showError(field: FieldConfig) {
+    const control = this.form.get(field.key);
+    return Boolean(control?.invalid && (control.touched || control.dirty));
+  }
+
+  errorMessage(field: FieldConfig) {
+    const control = this.form.get(field.key);
+
+    if (control?.hasError('required')) {
+      return 'Este campo es obligatorio.';
+    }
+
+    if (control?.hasError('email')) {
+      return 'Ingresa un correo valido.';
+    }
+
+    return 'Revisa el valor ingresado.';
+  }
+
+  storedValue(field: FieldConfig) {
+    const value = this.form.get(field.key)?.value;
+    return typeof value === 'string' && value.trim() ? value : null;
   }
 
   preventNumericStep(field: FieldConfig, event: KeyboardEvent) {
@@ -604,6 +1163,53 @@ export class EntityFormDialogComponent {
   previewUrl(field: FieldConfig) {
     const value = this.form.get(field.key)?.value;
     return typeof value === 'string' && value.trim() ? this.api.resolveAssetUrl(value) : null;
+  }
+
+  private isFieldCompleted(field: FieldConfig) {
+    const control = this.form.get(field.key);
+
+    if (!control || control.disabled) {
+      return true;
+    }
+
+    const value = control.value;
+
+    if (field.type === 'checkbox') {
+      return field.required ? Boolean(value) : true;
+    }
+
+    if (value === null || value === undefined) {
+      return false;
+    }
+
+    if (typeof value === 'string') {
+      return value.trim().length > 0;
+    }
+
+    return true;
+  }
+
+  private focusFirstField() {
+    const target = this.host.nativeElement.querySelector<HTMLElement>(
+      'mat-dialog-content input:not([type="file"]):not([readonly]), mat-dialog-content textarea, mat-dialog-content [role="combobox"]',
+    );
+    target?.focus({ preventScroll: true });
+  }
+
+  private focusFirstInvalidField() {
+    const invalidField = this.guidedFields.find((field) => this.form.get(field.key)?.invalid);
+    if (!invalidField) {
+      return;
+    }
+
+    this.scrollToSection(invalidField.section?.trim() || 'General');
+
+    requestAnimationFrame(() => {
+      const target = this.host.nativeElement.querySelector<HTMLElement>(
+        `[formcontrolname="${invalidField.key}"]`,
+      );
+      target?.focus({ preventScroll: true });
+    });
   }
 
   private preloadSelectOptions() {

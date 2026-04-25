@@ -174,14 +174,10 @@ export class EntityManagementPageComponent {
   }
 
   openCreate(config: NonNullable<ReturnType<EntityManagementPageComponent['config']>>) {
-    const dialogRef = this.dialog.open(EntityFormDialogComponent, {
-      width: 'min(1140px, calc(100vw - 1rem))',
-      maxWidth: '100vw',
-      data: {
-        config,
-        isCreate: true,
-      },
-    });
+    const dialogRef = this.dialog.open(EntityFormDialogComponent, this.buildDialogConfig({
+      config,
+      isCreate: true,
+    }));
 
     dialogRef.afterClosed().subscribe((payload) => {
       if (!payload) {
@@ -201,15 +197,11 @@ export class EntityManagementPageComponent {
   ) {
     const id = this.resolveId(row, config.idKey);
     this.api.get<Record<string, unknown>>(`${config.endpoint}/${id}`).subscribe((record) => {
-      const dialogRef = this.dialog.open(EntityFormDialogComponent, {
-        width: 'min(1140px, calc(100vw - 1rem))',
-        maxWidth: '100vw',
-        data: {
-          config,
-          isCreate: false,
-          initialValue: record,
-        },
-      });
+      const dialogRef = this.dialog.open(EntityFormDialogComponent, this.buildDialogConfig({
+        config,
+        isCreate: false,
+        initialValue: record,
+      }));
 
       dialogRef.afterClosed().subscribe((payload) => {
         if (!payload) {
@@ -226,6 +218,21 @@ export class EntityManagementPageComponent {
 
   resolveId(row: Record<string, unknown>, idKey: string) {
     return row[idKey] as string;
+  }
+
+  private buildDialogConfig(data: {
+    config: NonNullable<ReturnType<EntityManagementPageComponent['config']>>;
+    isCreate: boolean;
+    initialValue?: Record<string, unknown>;
+  }) {
+    return {
+      width: 'min(1440px, calc(100vw - 0.75rem))',
+      maxWidth: '100vw',
+      maxHeight: '96vh',
+      autoFocus: false,
+      panelClass: 'entity-form-dialog-panel',
+      data,
+    } as const;
   }
 
   renderCell(row: Record<string, unknown>, column: EntityColumn) {
